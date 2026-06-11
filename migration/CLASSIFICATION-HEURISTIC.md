@@ -26,7 +26,7 @@ You do NOT need to deeply understand every line. A NOW.md self-sorts by its own 
 |---|---|
 | **ACTIVE** (1) | Labeled in-progress/in-flight AND not stamped shipped/done. If none is clearly current, propose the most-likely "resume this" item and flag it low-confidence. May legitimately be empty post-migration. **Tiebreak — severity vs (priority) on different items:** when a severity signal (🚨 CRITICAL / "users can't trust the app" / broken primary path) and an explicit "(priority)" tag land on *different* items, default to severity → ACTIVE, the "(priority)" item → UP NEXT #1. Always flag this specific call in the review so [USER_NAME] can swap them. |
 | **UP NEXT** (≤3, ordered) | Numbered "what's next" lists — their existing order IS the ranking. Plus items with "unblocks / blocking / when X then Y" urgency. Take the top 3. **When forward work is an *unranked* bullet list (no numbering), you have to infer the order: 🚨 CRITICAL / "blocking" / broken-primary-path items first, then explicit "(priority)" tags, then concrete self-contained fixes, then the rest. Flag the inferred order as a low-confidence call in the review — the order is your read, not the file's.** |
-| **WAITING** (a held UP NEXT slot) | Blocked on a **third party**: "pending / awaiting / carrier registration / client / vendor / approval." Out of [USER_NAME]'s hands. **Qualifier (avoid false-positives):** WAITING is ONLY a tracked, outstanding, third-party ask you've **actually sent** — not any appearance of "waiting/pending." "Waiting on a friend to decide" about a maybe-feature → IDEAS, not WAITING. |
+| **FOLLOW-UP** (a held UP NEXT slot) | Blocked on a **third party**: "pending / awaiting / carrier registration / client / vendor / approval." Out of [USER_NAME]'s hands. **Qualifier (avoid false-positives):** FOLLOW-UP is ONLY a tracked, outstanding, third-party ask you've **actually sent** — not any appearance of "waiting/pending." "Waiting on a friend to decide" about a maybe-feature → IDEAS, not FOLLOW-UP. |
 | **FOR SURE** (unordered) | Committed but not scheduled: "Queued / Deferred / Follow-ups" beyond the top 3. Bugs/dragons that are real and will be fixed. |
 | **IDEAS** | "Future / Not Now / parked / paused / passion project / maybe / could / worth exploring." |
 
@@ -55,7 +55,7 @@ Per project, write `MIGRATION-REVIEW.md` next to the new AGENDA, low-confidence 
 ## Did automatically (skim)
 - Dropped as history: [N items / sections]
 - Routed to canonical docs / CLAUDE: [list]
-- Placed: ACTIVE [1] · UP NEXT [n] · WAITING [n] · FOR SURE [n] · IDEAS [n]
+- Placed: ACTIVE [1] · UP NEXT [n] · FOLLOW-UP [n] · FOR SURE [n] · IDEAS [n]
 ```
 
 ## Step F — The SETUP path (no NOW.md)
@@ -80,7 +80,7 @@ The most common cleanup is **trimming MEMORY.md in place** to the current gate h
 A "how [USER_NAME] works" / working-preference fact (e.g. "trusts overnight builds") **defaults to MEMORY.md** per the route table. It goes to `feedback.md` **only** if it's a behavioral rule *earned with a why* (a correction you arrived at together). When in doubt, MEMORY.md.
 
 ## Worked examples (from the real files)
-- **project-gamma** — "Open Threads" #1 fix-UI-mapper → UP NEXT; #2 when-10DLC-registers → WAITING (carrier); #3/#4 → UP NEXT/FOR SURE; "Deferred" → FOR SURE/IDEAS; "Current State / Mission / Live Operational Facts / Source-of-Truth Pointers" → CLAUDE. Cleanest case.
+- **project-gamma** — "Open Threads" #1 fix-UI-mapper → UP NEXT; #2 when-10DLC-registers → FOLLOW-UP (carrier); #3/#4 → UP NEXT/FOR SURE; "Deferred" → FOR SURE/IDEAS; "Current State / Mission / Live Operational Facts / Source-of-Truth Pointers" → CLAUDE. Cleanest case.
 - **project-beta** — "Where Project-Beta stands" + "Stack snapshot" → CLAUDE; "Priorities" keep only the *not-yet-built* sub-bullets → FOR SURE; "Active / in flight" → nearly all SHIPPED → DROP; "Queued" → FOR SURE/IDEAS; "Known dragons" → FOR SURE; "Open questions (carried)" → IDEAS/CLAUDE. Heavy history-drop.
 - **project-alpha** — "Build Queue" #1 interstitial → UP NEXT (drop the incident paragraphs); empty `{{Upcoming Builds / Architecture / Completed}}` → DROP; "Parked side projects / Receptionist" → FOR SURE project header (or its own AGENDA). Heavy scaffolding-drop.
 - **project-delta** — "Real Follow-Ups / type-drift bugs" → FOR SURE; "Resolved This Session / Completed Today" → DROP; "Future Session Items" → FOR SURE/IDEAS; "Queued (Not Now) Family Workspace" → IDEAS; "Stale Docs" cleanup list → FOR SURE; "Architecture / Supabase" → CLAUDE/canonical.

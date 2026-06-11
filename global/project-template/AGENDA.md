@@ -11,14 +11,14 @@ Read top to bottom = hottest to coldest. Method lives in the `/agenda` skill.
 
 -
 
-## UP NEXT  *(limit 3 total — WAITING is one of the 3 when blocked, not extra)*
-*The next few, ordered. 2 work slots + 1 WAITING when something's blocked; 3 work slots when nothing is. The bottleneck is deliberate — it keeps blocked work in view.*
+## UP NEXT  *(limit 3 total — FOLLOW-UP is one of the 3 when blocked, not extra)*
+*The next few, ordered. 2 work slots + 1 FOLLOW-UP when something's blocked; 3 work slots when nothing is. The bottleneck is deliberate — it keeps blocked work in view.*
 
 1.
 2.
 3.
 
-### WAITING  *(third-party asks only — pinned, never rises)*
+### FOLLOW-UP  *(third-party asks only — pinned, never rises)*
 *Blocked on someone else. Each carries: who · last **sent** ask (date + ref) · last nudge. Gated work nests under its blocker as `↳ gated:`.*
 
 -

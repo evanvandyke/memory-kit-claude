@@ -42,7 +42,7 @@ The doc-system files that live in the project repo — `CLAUDE.md`, `AGENDA.md`,
 
 **AGENDA.md**
 - All four tiers, in order: ACTIVE / UP NEXT / FOR SURE / IDEAS.
-- ACTIVE holds at most one item. UP NEXT holds at most three items *total* — and WAITING is **inside** that three, not on top of it: when work is blocked on a third party, one of the three slots **is** the WAITING block (2 work slots + 1 WAITING when blocked; 3 work slots when nothing's blocked). This is intentional — a deliberate visibility bottleneck that keeps blocked/third-party work in view, not overhead to optimize away.
+- ACTIVE holds at most one item. UP NEXT holds at most three items *total* — and FOLLOW-UP is **inside** that three, not on top of it: when work is blocked on a third party, one of the three slots **is** the FOLLOW-UP block (2 work slots + 1 FOLLOW-UP when blocked; 3 work slots when nothing's blocked). This is intentional — a deliberate visibility bottleneck that keeps blocked/third-party work in view, not overhead to optimize away.
 - Forward-only: no history, no "last session," no completed-and-struck items.
 - Sub-projects nest **inline, not in their own files**: a slice of a nested initiative is tagged `Project: [parent] — Subproject: [sub] — [slice]` in this one AGENDA. A sub-project graduates to a standalone project (its own root + AGENDA) only when it's earned the separation. A nested `AGENDA.md` created for a sub-project is drift — its work belongs in the root AGENDA.
 

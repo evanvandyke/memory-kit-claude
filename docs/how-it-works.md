@@ -52,7 +52,7 @@ Read top to bottom, hottest to coldest:
 | Tier | Limit | What it holds |
 |------|-------|---------------|
 | **ACTIVE** | 1 | The one thing you're working on right now. |
-| **UP NEXT** | 3 total | The next few, ordered. WAITING lives inside this limit (see below). |
+| **UP NEXT** | 3 total | The next few, ordered. FOLLOW-UP lives inside this limit (see below). |
 | **FOR SURE** | unlimited | Committed work, not yet scheduled. Unordered. |
 | **IDEAS** | unlimited | Someday, maybe. |
 
@@ -62,9 +62,9 @@ The rise: `IDEAS → FOR SURE → UP NEXT → ACTIVE → done (deleted)`.
 
 Completed items are deleted, not archived, not struck through, not moved to a "done" section. The agenda is what's ahead, never what's behind. Session history lives in the compression notes.
 
-### WAITING
+### FOLLOW-UP
 
-When work is blocked on a third party (a client, a vendor, an approval), one of UP NEXT's three slots becomes a WAITING block. Two work slots plus one WAITING when something's blocked, three work slots when nothing is. Spending a scarce slot on blocked work is deliberate: it keeps follow-ups visible instead of letting them drift out of sight.
+When work is blocked on a third party (a client, a vendor, an approval), one of UP NEXT's three slots becomes a FOLLOW-UP block. Two work slots plus one FOLLOW-UP when something's blocked, three work slots when nothing is. Spending a scarce slot on blocked work is deliberate: it keeps follow-ups visible instead of letting them drift out of sight.
 
 Each blocker carries: who, the last sent ask (date and reference), and the last nudge. The clock runs from the last *sent* contact, never a draft or an intention. If three business days pass without movement, Claude surfaces it proactively at the next session start: "you last reached out X days ago on Y, want to nudge?"
 
@@ -85,7 +85,7 @@ When you say `/start`, Claude:
 2. Does the session-start reading the project `CLAUDE.md` prescribes (agenda, memory, feedback, canonical docs)
 3. Reads the latest compression note (the bridge from last session)
 4. Checks for a `REPAIR-REVIEW.md` waiting for your attention
-5. Surfaces stale WAITING items and anything relevant from the lower agenda tiers
+5. Surfaces stale FOLLOW-UP items and anything relevant from the lower agenda tiers
 6. States the ACTIVE item and recommends how to proceed
 
 The goal is orientation without re-exploration. You pick up where you left off, with a clear next move proposed.
@@ -155,7 +155,7 @@ Templates live at `~/.claude/project-template/` and define the starting shape of
 
 - **_SPEC.md** is the authority. It defines what files exist, where they go, what invariants they must satisfy, and what "correct" means for each file. Both `/project-setup` and `/project-repair` read this single file. Neither holds its own copy of the rules.
 - **CLAUDE.md** template: project instructions with the session-start reading list, canonical docs section, and project overview.
-- **AGENDA.md** template: the four-tier structure, pre-formatted with the limits and the WAITING block.
+- **AGENDA.md** template: the four-tier structure, pre-formatted with the limits and the FOLLOW-UP block.
 - **MEMORY.md** template: the routing table, the quality gate, the NO SILENT WRITES rule, and section prompts.
 - **feedback.md** template: the format rules and the purge protocol.
 - **CLAUDE-SECTIONS.md**: the canonical menu of optional sections a project's CLAUDE.md can have (Key People, Voice Rules, Conventions, etc.). Used by both setup and repair.
