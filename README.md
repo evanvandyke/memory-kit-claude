@@ -36,24 +36,24 @@ If that number is north of 10 for any single project, you're already in the zone
 Open Claude Code in any project and paste this one prompt:
 
 ```
-Clone https://github.com/evanvandyke/claude-memory-kit.git into the home folder, then read claude-memory-kit/setup.md and follow it exactly. It is a one-time setup wizard. Start at Step 1.
+Fetch https://raw.githubusercontent.com/evanvandyke/claude-memory-kit/main/setup.md and save it in this project as memory-kit-setup.md. Then read it and follow it exactly. It is a one-time setup wizard. Start at Step 1.
 ```
 
-That's the whole install. Claude runs the clone itself; you just approve it. The setup wizard then walks you through personalizing and installing the system. It takes about 15 to 30 minutes.
+That's the whole install. Claude fetches the wizard, clones what it needs to a temp folder behind the scenes, walks you through the setup, and cleans up after itself. You just approve the steps as you go. The whole thing takes about 30 to 45 minutes.
 
-If the clone fails, download the repo as a ZIP from GitHub (green "Code" button, then "Download ZIP"), unzip it into your home folder, and tell Claude:
+If the fetch fails, download `setup.md` from this repo (click the file, then the download button), drop it in any project folder, and tell Claude:
 
 ```
-Find the claude-memory-kit folder in my home directory (it may be named claude-memory-kit-main), then read its setup.md and follow it exactly. Start at Step 1.
+Read setup.md and follow it exactly. It is a one-time setup wizard. Start at Step 1.
 ```
 
 ## The Daily Rhythm
 
 The whole system reduces to three moments:
 
-1. **Start the session.** Say `/start`. Claude reads the project docs, picks up from where you left off, and recommends what to work on.
-2. **Work.** The agenda manages itself through natural conversation. Say `/agenda add [idea]` when something comes up.
-3. **Close the session.** Say `/wrap`. The agenda gets pruned, memory gets updated through the quality gate, and a compression note gets written for next time.
+1. **Start the session.** Type `/start`. Claude reads the project docs, picks up from where you left off, and recommends what to work on.
+2. **Work.** The agenda manages itself through natural conversation. Just tell Claude what you're working on or what's coming up, and it handles the rest.
+3. **Close the session.** Type `/wrap`. The agenda gets pruned, memory gets updated through the quality gate, and a handoff note gets written for next time.
 
 That's it. The repair cycle runs itself every 5th session. You'll only hear about it when something needs your decision.
 
