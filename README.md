@@ -33,25 +33,19 @@ If that number is north of 10 for any single project, you're already in the zone
 
 ## Quick Start
 
-Clone the repo:
-
-```bash
-git clone https://github.com/evanvandyke/claude-memory-kit.git
-```
-
-Then open Claude Code in any project and say:
+Open Claude Code in any project and paste this one prompt:
 
 ```
-Fetch claude-memory-kit/setup.md and read it. Follow it exactly. Start at Step 1.
+Clone https://github.com/evanvandyke/claude-memory-kit.git into the home folder, then read claude-memory-kit/setup.md and follow it exactly. It is a one-time setup wizard. Start at Step 1.
 ```
 
-If you're already in the cloned directory:
+That's the whole install. Claude runs the clone itself; you just approve it. The setup wizard then walks you through personalizing and installing the system. It takes about 15 to 30 minutes.
+
+If the clone fails, download the repo as a ZIP from GitHub (green "Code" button, then "Download ZIP"), unzip it into your home folder, and tell Claude:
 
 ```
-Read setup.md and follow it exactly. Start at Step 1.
+Find the claude-memory-kit folder in my home directory (it may be named claude-memory-kit-main), then read its setup.md and follow it exactly. Start at Step 1.
 ```
-
-The setup wizard walks you through personalizing and installing the system. It takes about 15 to 30 minutes.
 
 ## The Daily Rhythm
 
