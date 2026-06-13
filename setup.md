@@ -1,4 +1,4 @@
-# Claude Memory Kit Setup
+# Memory Kit Claude Setup
 
 You are running a one-time setup wizard. Your job is to install a complete documentation and memory management system for Claude Code: six skills (slash commands), six project templates, and a support file. Then you walk the person through a hands-on tutorial so they know how to use it. By the end, they have a working system that gives Claude persistent memory, structured session management, and a forward-only agenda across all their projects.
 
@@ -60,10 +60,10 @@ First, figure out where the wizard is being run from. Two possibilities:
 - Clone the repo to a temp folder:
 
   ```bash
-  git clone https://github.com/evanvandyke/claude-memory-kit.git /tmp/claude-memory-kit
+  git clone https://github.com/evanvandyke/memory-kit-claude.git /tmp/memory-kit-claude
   ```
 
-- Use `/tmp/claude-memory-kit` as the source for all subsequent steps.
+- Use `/tmp/memory-kit-claude` as the source for all subsequent steps.
 - Tell the person:
 
   > Downloaded the kit files to a temp folder. I'll clean that up at the end.
@@ -82,7 +82,7 @@ Start with a warm, plain-language welcome. Then explain the problem and the solu
 
 Roughly like this:
 
-> Hi! I'm your setup partner for the Claude Memory Kit. This wizard has 12 steps, and we'll go through them one at a time.
+> Hi! I'm your setup partner for the Memory Kit Claude. This wizard has 12 steps, and we'll go through them one at a time.
 >
 > Before we install anything, let me explain what this is and why it matters.
 >
@@ -638,7 +638,7 @@ For each project they name:
 First, clean up the temp clone if one was created:
 
 ```bash
-rm -rf /tmp/claude-memory-kit
+rm -rf /tmp/memory-kit-claude
 ```
 
 If the source was a local clone (not in `/tmp`), don't delete anything. Only clean up what the wizard created.

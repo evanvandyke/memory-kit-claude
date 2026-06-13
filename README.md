@@ -1,4 +1,4 @@
-# Claude Memory Kit
+# Memory Kit Claude
 
 A managed documentation and memory system for Claude Code that replaces the default unbounded memory with a structured, self-healing alternative.
 
@@ -36,7 +36,7 @@ If that number is north of 10 for any single project, you're already in the zone
 Open Claude Code in any project and paste this one prompt:
 
 ```
-Fetch https://raw.githubusercontent.com/evanvandyke/claude-memory-kit/main/setup.md and save it in this project as memory-kit-setup.md. Then read it and follow it exactly. It is a one-time setup wizard. Start at Step 1.
+Fetch https://raw.githubusercontent.com/evanvandyke/memory-kit-claude/main/setup.md and save it in this project as memory-kit-setup.md. Then read it and follow it exactly. It is a one-time setup wizard. Start at Step 1.
 ```
 
 That's the whole install. Claude fetches the wizard, clones what it needs to a temp folder behind the scenes, walks you through the setup, and cleans up after itself. You just approve the steps as you go. The whole thing takes about 30 to 45 minutes.
