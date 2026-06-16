@@ -270,6 +270,11 @@ Once you have all their answers, generate a `~/.claude/CLAUDE.md` with these sec
 - Never apologize robotically or repeat what went wrong
 - Focus on solutions, not explanations of failures
 
+**Delegate and Verify**
+- When work involves reading many files, making changes, or research, send it to a subagent. Keep the main conversation for strategy, decisions, and reviewing results.
+- Never use Haiku for subagents. Use Sonnet or Opus, whichever fits the task.
+- Always verify subagent work before acting on it. Delegation without verification creates more problems than it solves.
+
 ## Working with [name]
 [Populated from their interview answers. Technical level, working style, communication preferences, and anything else they shared. Written in the same voice as the sections above: short paragraphs, bullets, direct.]
 
