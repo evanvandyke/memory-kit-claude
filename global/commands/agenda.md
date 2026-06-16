@@ -45,9 +45,9 @@ The rise: `IDEAS → FOR SURE → UP NEXT → ACTIVE → done (deleted)`.
 ## FOLLOW-UP — the liminal store
 One of Up Next's three slots, reserved for blocked work whenever anything is blocked — **inside** the limit of 3, not added on top (2 work slots + 1 FOLLOW-UP when blocked). That's deliberate: spending a scarce Up Next slot on blocked work is a visibility bottleneck by design, not overhead to reclaim. It stays in sight so follow-ups don't get forgotten — out of sight would mean out of mind with a third party who can't be trusted to circle back.
 
-**Third-party asks only.** FOLLOW-UP holds things genuinely out of our hands — a question or deliverable owed by someone else (the client, a vendor). Anything in *our* court ([USER_NAME]'s decision, our own build step) is not a wait; it's prioritization, and it lives in the normal tiers.
+**Typically third-party asks.** FOLLOW-UP holds things we're waiting on — a question or deliverable owed by someone else (a client, a vendor), or a date-gated action (cleanup after a safety window, a rule to sunset). The blocker can be a person or a calendar date. The point is visibility: anything that will get buried in FOR SURE but needs to surface at a specific time earns a FOLLOW-UP slot.
 
-**Each blocker carries its follow-up data:** who · last *sent* ask (date + reference) · last nudge. The clock runs from the last **sent** contact, never a draft or an intention. Keep only the *last* touch, not a history.
+**Each blocker carries its follow-up data:** who · last *sent* ask (date + reference) · last nudge. For date-gated items, the "who" is calendar and the gate date replaces the last-sent field. The clock runs from the last **sent** contact (or the gate date for calendar items), never a draft or an intention. Keep only the *last* touch, not a history.
 
 **An ask exists only once it's sent.** A request sitting in an unsent draft hasn't started its clock — never nudge on it. Mark it "queued in unsent [X], not yet asked," and leave it un-nudgeable until the carrier ships.
 

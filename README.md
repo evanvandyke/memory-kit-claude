@@ -18,7 +18,7 @@ If that number is north of 10 for any single project, you're already in the zone
 
 ## What You Get
 
-**6 skills** (available as slash commands in every project):
+**6 skills** (available in every project):
 
 - `/start` - Open a session deliberately. Reads your project docs, picks up from the last compression note, surfaces what's waiting, and recommends the next move.
 - `/wrap` - Close a session cleanly. Prunes the agenda, saves memory through a quality gate, triggers repair on cadence, and banks a handoff note.
@@ -27,7 +27,7 @@ If that number is north of 10 for any single project, you're already in the zone
 - `/project-setup` - Set up a new project's doc system from templates in one pass.
 - `/project-repair` - Audit a project against the structure spec, auto-fix safe drift, escalate the rest. Runs every 5th session automatically.
 
-**A template system** that stamps consistent project structure: `CLAUDE.md` (project instructions), `AGENDA.md` (work tracker), `MEMORY.md` (curated long-term memory), `feedback.md` (behavioral rules earned together), `_SPEC.md` (the structure spec, the source of truth the skills audit against), and `CLAUDE-SECTIONS.md` (the canonical menu of optional CLAUDE.md sections).
+**A template system** that creates consistent project structure: `CLAUDE.md` (project instructions), `AGENDA.md` (work tracker), `MEMORY.md` (curated long-term memory), `feedback.md` (behavioral rules earned together), `_SPEC.md` (the structure spec, the source of truth the skills audit against), and `CLAUDE-SECTIONS.md` (the canonical menu of optional CLAUDE.md sections).
 
 **A self-healing repair cycle** that catches and fixes drift before it compounds. Two independent auditors examine the project, a fresh agent reconciles their findings, mechanical fixes are applied automatically, and structural questions are escalated for your review.
 
