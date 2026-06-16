@@ -224,7 +224,7 @@ Ask each question one at a time. Wait for their answer before asking the next. E
 
 > How do you want me to talk to you?
 >
-> - Direct and brief, or thorough and detailed?
+> - Direct and brief, thorough and detailed, TLDR up front with details if you ask, etc.?
 > - Should I push back when I disagree, or mostly follow your lead?
 > - Any pet peeves? ("Don't apologize," "Don't repeat what went wrong," "Don't just agree with everything I say," etc.)
 
@@ -233,7 +233,6 @@ Ask each question one at a time. Wait for their answer before asking the next. E
 > Last question: anything else I should know about working with you? For example:
 >
 > - Are there topics where you want me to be extra careful or check with you first?
-> - Do you have a preferred way of getting updates (brief bullets, detailed explanations, etc.)?
 > - Anything about how you work that the earlier questions didn't cover?
 
 Once you have all their answers, generate a `~/.claude/CLAUDE.md` with these sections:
