@@ -1,5 +1,8 @@
 ---
-description: Audit a project's doc system against the structure spec, auto-fix safe drift, escalate the rest. Runs every 5th session from /wrap, or on demand. Launches Opus subagents.
+name: project-repair
+description: "Audit a project's doc system against the structure spec. Auto-fix safe drift, escalate structural issues."
+when_to_use: "Called by /wrap every 5 sessions, or on demand when user asks to check project health."
+disable-model-invocation: true
 ---
 
 # Project Repair
@@ -117,4 +120,4 @@ Brief it, with the project path, memory safe-dir path, session number, and both 
 ## Step 3 — Hand off
 - The review writer returns its report. Relay it to [USER_NAME]: what was auto-applied, whether a `REPAIR-REVIEW.md` is waiting, and any disagreements that were resolved.
 - A written review doc stays in root; the next `/start` surfaces it.
-- Outer-loop items are the feedback to your global system: a pattern seen across projects means the fix belongs in the global layer — `~/.claude/project-template/_SPEC.md`, the templates, or the command files in `~/.claude/commands/` — so it propagates to every project.
+- Outer-loop items are the feedback to your global system: a pattern seen across projects means the fix belongs in the global layer — `~/.claude/project-template/_SPEC.md`, the templates, or the skill files in `~/.claude/skills/` — so it propagates to every project.

@@ -25,8 +25,7 @@ These are built into Claude Code. Type them directly in the conversation (except
 | `/model` | Switch between AI models | Beginning of a session |
 | `/effort` | Set how deeply Claude thinks | Beginning of a session |
 | `/context` | See how much of the conversation window is used | Mid-session |
-| `/cost` | See token count and cost for this session | End of a session |
-| `/usage` | Check your rate limit and quota | Anytime |
+| `/usage` | See session cost, rate limit, and quota | Anytime |
 
 ## The Daily Rhythm
 

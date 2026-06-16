@@ -48,7 +48,7 @@ Clone the repo so you have all the source files to install from:
 rm -rf /tmp/memory-kit-claude 2>/dev/null; git clone https://github.com/evanvandyke/memory-kit-claude.git /tmp/memory-kit-claude
 ```
 
-Use `/tmp/memory-kit-claude` as the source for all subsequent steps. Read source files from `/tmp/memory-kit-claude/global/commands/`, `/tmp/memory-kit-claude/global/project-template/`, `/tmp/memory-kit-claude/global/Technical-Compression-Guide.md`, and `/tmp/memory-kit-claude/global/CLAUDE-COMMANDS.md`.
+Use `/tmp/memory-kit-claude` as the source for all subsequent steps. Read source files from `/tmp/memory-kit-claude/global/skills/`, `/tmp/memory-kit-claude/global/project-template/`, `/tmp/memory-kit-claude/global/Technical-Compression-Guide.md`, and `/tmp/memory-kit-claude/global/CLAUDE-COMMANDS.md`.
 
 Tell the person:
 
@@ -133,13 +133,13 @@ else
 fi
 
 echo ""
-echo "=== Existing commands ==="
-if [ -d ~/.claude/commands ]; then
-  ls ~/.claude/commands/ 2>/dev/null | grep -c "\.md$"
-  echo "command files found:"
-  ls ~/.claude/commands/ 2>/dev/null
+echo "=== Existing skills ==="
+if [ -d ~/.claude/skills ]; then
+  ls -d ~/.claude/skills/*/ 2>/dev/null | wc -l | tr -d ' '
+  echo "skill folders found:"
+  ls ~/.claude/skills/ 2>/dev/null
 else
-  echo "No commands directory"
+  echo "No skills directory"
 fi
 
 echo ""
@@ -363,13 +363,13 @@ Start with a brief explainer about what skills are and how to use them:
 
 For each of the six skills (`start`, `wrap`, `compress`, `agenda`, `project-setup`, `project-repair`):
 
-1. Check if `~/.claude/commands/[name].md` exists
+1. Check if `~/.claude/skills/[name]/SKILL.md` exists
 2. If it exists, tell the person what you found and offer: **Replace** with the new version, or **Keep** what's there
-3. If it doesn't exist, read the source from `/tmp/memory-kit-claude/global/commands/[name].md`
+3. If it doesn't exist, read the source from `/tmp/memory-kit-claude/global/skills/[name]/SKILL.md`
 4. Replace `[USER_NAME]` with their name, `[USER_NAME]'s` for possessive forms
-5. Write to `~/.claude/commands/[name].md`
+5. Create `~/.claude/skills/[name]/` if needed, then write to `~/.claude/skills/[name]/SKILL.md`
 
-Create `~/.claude/commands/` if it doesn't exist.
+Create `~/.claude/skills/` if it doesn't exist.
 
 For each of the six templates (`_SPEC.md`, `CLAUDE.md`, `CLAUDE-SECTIONS.md`, `AGENDA.md`, `MEMORY.md`, `feedback.md`):
 
@@ -492,7 +492,20 @@ Then explain the structure:
 >
 > Items rise in priority and get deleted when done. Nothing gets archived. You didn't need a special skill for any of that. I pick up on work items in natural conversation and manage the agenda for you. You can also say "show me the agenda" or "move that to Active" if you want to manage it directly.
 
-### 6c: Close the session
+### 6c: Quick dashboard tour
+
+> Before we close the session, let me show you two quick commands you can use anytime.
+
+Walk them through each command:
+
+1. Have them type `/context`. Explain: "This shows how much of the conversation window we've used this session."
+2. Have them type `/usage`. Explain: "This shows your session cost, rate limit, and how much quota you have left."
+
+After both:
+
+> You don't need to memorize those. They're in CLAUDE-COMMANDS.md, the reference file in your project. Open it anytime.
+
+### 6d: Close the session
 
 > Now let's close this session for real. This completes your first full cycle: you opened, you worked, and now you'll close.
 >
@@ -532,21 +545,8 @@ First, tell them you're cleaning up:
 
 ```bash
 rm -rf /tmp/memory-kit-claude
+rm -f memory-kit-setup.md 2>/dev/null
 ```
-
-Before the final send-off, show them the dashboard commands:
-
-> Before we wrap up completely, let me show you three quick commands you can use anytime to see what's going on under the hood. Try each one now.
-
-Walk them through each command one at a time. Run each one and briefly explain the output:
-
-1. Have them type `/context`. Explain: "This shows how much of the conversation window we've used this session."
-2. Have them type `/cost`. Explain: "This shows the token count and cost for this session."
-3. Have them type `/usage`. Explain: "This shows your rate limit and how much quota you have left."
-
-After all three:
-
-> You don't need to memorize those. They're all in CLAUDE-COMMANDS.md, the reference file in your project. Open it anytime you need to look something up.
 
 Then open for questions:
 

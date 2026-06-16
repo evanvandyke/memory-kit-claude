@@ -1,5 +1,8 @@
 ---
-description: Create a project's doc system from the structure spec, or stand up what's missing. Setup only; drift repair lives in /project-repair.
+name: project-setup
+description: "Set up the doc/memory system in a new project. Creates CLAUDE.md, AGENDA.md, MEMORY.md, feedback.md, and reference files."
+when_to_use: "User says 'set up this project' or wants to initialize the memory system in a new project."
+disable-model-invocation: true
 ---
 
 # Project Setup

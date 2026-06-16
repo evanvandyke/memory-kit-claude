@@ -1,5 +1,7 @@
 ---
-description: Close the session. Prune the agenda, update memory per the gate, run repair on cadence, then bank a compression note.
+name: wrap
+description: "Close the current session. Prune the agenda, save anything worth remembering, and write a handoff note."
+when_to_use: "User says 'wrap it up,' 'let's wrap,' 'we're done,' 'close the session,' or is finishing work."
 ---
 
 # Wrap

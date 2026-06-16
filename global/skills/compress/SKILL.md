@@ -1,5 +1,7 @@
 ---
-description: Write your own handoff note before compacting, so your future self continues from your chosen context, not just the system's summary. Runs as the last step of /wrap, or alone mid-session or for an untracked one-off.
+name: compress
+description: "Write a self-authored handoff note capturing the session's progress. Usually runs automatically inside /wrap."
+when_to_use: "User says 'save my progress,' 'compress,' or needs a mid-session handoff note. Also called as the last step of /wrap."
 ---
 
 # Compress

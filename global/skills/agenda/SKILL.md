@@ -1,5 +1,7 @@
 ---
-description: The Agenda method. How the forward-only agenda is added to, moved, demoted, pruned, and surfaced. Portable across projects; each project's AGENDA.md is the instance.
+name: agenda
+description: "Manage the project's forward-only agenda. Add items, move priorities, surface what's next."
+when_to_use: "User mentions work items, priorities, tasks, or asks what to work on. Also when items need to be added, moved, or reviewed."
 ---
 
 # Agenda — the method

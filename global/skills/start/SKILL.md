@@ -1,5 +1,7 @@
 ---
-description: Open a session deliberately — establish the partnership, complete the project's session-start reading, surface what's waiting, and recommend the next move.
+name: start
+description: "Open a work session. Read project docs, check where we left off, and recommend what to work on next."
+when_to_use: "User says 'let's get started,' 'start,' 'let's begin,' 'let's go,' or sits down to work."
 ---
 
 # Start
