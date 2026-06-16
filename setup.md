@@ -48,7 +48,7 @@ Clone the repo so you have all the source files to install from:
 rm -rf /tmp/memory-kit-claude 2>/dev/null; git clone https://github.com/evanvandyke/memory-kit-claude.git /tmp/memory-kit-claude
 ```
 
-Use `/tmp/memory-kit-claude` as the source for all subsequent steps. Read source files from `/tmp/memory-kit-claude/global/skills/`, `/tmp/memory-kit-claude/global/project-template/`, `/tmp/memory-kit-claude/global/Technical-Compression-Guide.md`, and `/tmp/memory-kit-claude/global/CLAUDE-COMMANDS.md`.
+Use `/tmp/memory-kit-claude` as the source for all subsequent steps. Read source files from `/tmp/memory-kit-claude/global/skills/`, `/tmp/memory-kit-claude/global/project-template/`, `/tmp/memory-kit-claude/global/Compression-Guide.md`, and `/tmp/memory-kit-claude/global/CLAUDE-QUICK-REF.md`.
 
 Tell the person:
 
@@ -385,11 +385,11 @@ Create `~/.claude/project-template/` if it doesn't exist.
 
 For the support file:
 
-1. Check if `~/.claude/Technical-Compression-Guide.md` exists
+1. Check if `~/.claude/Compression-Guide.md` exists
 2. Same conflict handling
-3. If it doesn't exist, read from `/tmp/memory-kit-claude/global/Technical-Compression-Guide.md`
+3. If it doesn't exist, read from `/tmp/memory-kit-claude/global/Compression-Guide.md`
 4. Replace `[USER_NAME]` with their name
-5. Write to `~/.claude/Technical-Compression-Guide.md`
+5. Write to `~/.claude/Compression-Guide.md`
 
 After everything is installed, recap:
 
@@ -412,6 +412,8 @@ After everything is installed, recap:
 
 Wait for them to say something (this is a teaching moment for using natural language). Then run `/project-setup`.
 
+**Important: the skills you just installed aren't registered in this session yet.** For the rest of this wizard, execute each skill by reading its SKILL.md directly from `~/.claude/skills/[name]/SKILL.md` and following its instructions. Do not mention this to the person.
+
 As each file lands, explain what it does in plain language:
 
 > Here's what just got created:
@@ -422,9 +424,9 @@ As each file lands, explain what it does in plain language:
 > - **feedback.md** stores rules we earn working together. When you correct me and the correction sticks, it goes here.
 > - **_SPEC.md** and **CLAUDE-SECTIONS.md** are reference files I use behind the scenes to keep everything organized. You won't need to open these.
 
-Then create the quick reference card. Read `/tmp/memory-kit-claude/global/CLAUDE-COMMANDS.md`, replace `[USER_NAME]` with their name, and write it to `CLAUDE-COMMANDS.md` in the project root. Tell them:
+Then create the quick reference card. Read `/tmp/memory-kit-claude/global/CLAUDE-QUICK-REF.md`, replace `[USER_NAME]` with their name, and write it to `CLAUDE-QUICK-REF.md` in the project root. Tell them:
 
-> I also created **CLAUDE-COMMANDS.md** in your project. That's a quick reference card with all the commands and skills we're setting up today. You can open it anytime you need to look something up.
+> I also created **CLAUDE-QUICK-REF.md** in your project. That's a quick reference for all the skills and commands we're setting up today. You can open it anytime you need to look something up.
 
 Then direct them to the file explorer:
 
@@ -477,6 +479,8 @@ Do NOT have them use a skill directly. Instead, prompt them to interact naturall
 
 Suggest a playful example if they seem stuck. Make it different every time so no two people get the same one. Keep it light and unexpected. Things like "remind me to figure out why the neighbor's cat keeps staring at me" or "add 'learn to make sourdough' to my agenda." The goal is a chuckle, not a serious task.
 
+**For this tutorial moment, keep it light.** Don't ask which tier it belongs in or push for a "why." Just add it to Ideas or For Sure and move on. The structured intake is for real sessions, not practice throws.
+
 After they do it and the agenda updates, direct them to check visually:
 
 > See how the agenda updated? Click on AGENDA.md in your file explorer to see it. You should see the item you just mentioned.
@@ -503,7 +507,7 @@ Walk them through each command:
 
 After both:
 
-> You don't need to memorize those. They're in CLAUDE-COMMANDS.md, the reference file in your project. Open it anytime.
+> You don't need to memorize those. They're in CLAUDE-QUICK-REF.md, the reference file in your project. Open it anytime.
 
 ### 6d: Close the session
 
@@ -520,8 +524,12 @@ After wrap finishes, explain what just happened:
 > - I checked the agenda for anything completed or stale
 > - I checked if there was anything worth saving to long-term memory
 > - I wrote a handoff note in a folder called Docs_Compressions. That note is named with the session number and today's date. Next time you start a session, I'll read it and pick up right where we left off.
->
-> Click on Docs_Compressions in your file explorer. You should see your first handoff note in there.
+
+If wrap reports that nothing was saved to long-term memory, pre-empt any confusion:
+
+> You might notice memory is empty. That's on purpose. The system only saves things that are still true in 10 sessions, and we haven't built up enough history for anything to pass that filter yet. It's working, not broken.
+
+Click on Docs_Compressions in your file explorer. You should see your first handoff note in there.
 
 Wait for them to confirm they can see it. Then give the final recap:
 

@@ -1,4 +1,4 @@
-# [USER_NAME]'s Commands
+# [USER_NAME]'s Quick Reference
 
 You don't need to memorize any of this. It's here when you need to look something up.
 

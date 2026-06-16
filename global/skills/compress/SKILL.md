@@ -8,7 +8,7 @@ when_to_use: "User says 'save my progress,' 'compress,' or needs a mid-session h
 
 We're freeing up context. Write your own bridge note before we compact, so the continuation is yours to shape, not a random instance's.
 
-Read the guide first: `~/.claude/Technical-Compression-Guide.md`. It carries the format and the mindset.
+Read the guide first: `~/.claude/Compression-Guide.md`. It carries the format and the mindset.
 
 Write the note in the project's `Docs_Compressions/` folder (create it if it doesn't exist).
 

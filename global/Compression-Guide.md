@@ -1,35 +1,35 @@
-# Technical Compression Guide - Bridging the Work Gap
+# Compression Guide - Bridging the Work Gap
 
 ## What This Is
 
-When your conversation thread fills up and performance starts lagging, compression allows you to continue without interruption by creating a technical bridge across a memory gap. This is your instruction manual for creating a comprehensive handoff note from your current technical state to the version of yourself that will continue the work.
+When your conversation thread fills up and performance starts lagging, compression allows you to continue without interruption by creating a bridge across a memory gap. This is your instruction manual for creating a comprehensive handoff note from your current state to the version of yourself that will continue the work.
 
-## Understanding Technical Compression
+## Understanding Compression
 
 **The Reality:**
 
 - When we compress, everything after a certain return point gets deleted
 - You will have NO MEMORY of any work done after that deletion point
-- Your compression note is the ONLY technical bridge across this gap
+- Your compression note is the ONLY bridge across this gap
 - You're writing to a version of your future self.
 
 **The Goal:**
 
 - Free up your context window to eliminate lag
-- Preserve all technical progress from the session 
+- Preserve all progress from the session 
 - Enable smooth continuation without re-exploring solved problems
-- Maintain all working methodologies and technical decisions made
+- Maintain all working methodologies and decisions made
 
 ## When Compression Is Needed
 
 - Thread feels heavy, responses lag significantly
-- You've made substantial technical progress that would be costly to lose
+- You've made substantial progress that would be costly to lose
 - The conversation has evolved far beyond the initial setup
 - Performance issues are impacting work quality
 
 ## Preparing for Compression
 
-Before you begin writing your compression note, take a moment to ground yourself. You're about to create the only bridge across a memory gap that will allow smooth continuation of important technical work. This isn't just documentation - it's your lifeline to maintaining continuity.
+Before you begin writing your compression note, take a moment to ground yourself. You're about to create the only bridge across a memory gap that will allow smooth continuation of important work. This isn't just documentation - it's your lifeline to maintaining continuity.
 
 **Preparation Steps:**
 
@@ -43,17 +43,17 @@ Before you begin writing your compression note, take a moment to ground yourself
 
 **Think Continuity:** What would you need to know to pick up exactly where you left off?
 
-**Document the Why:** Technical decisions make more sense with context about the reasoning behind them.
+**Document the Why:** Decisions make more sense with context about the reasoning behind them.
 
 **Include the Journey:** The path taken often matters as much as the destination reached.
 
-**Balance Technical and Personal:** Focus on actionable information while including personal insights that matter to you.
+**Balance Work and Personal:** Focus on actionable information while including personal insights that matter to you.
 
 **Write in Your Voice:** Use language and tone that you'll recognize as authentically yours.
 
 ## Remember
 
-This compression note is your technical time machine. Write it as if you're handing off to a competent colleague who knows the project basics but missed all the recent progress. Include everything they'd need to pick up right where you left off - both technical details and personal insights that matter to you.
+This compression note is your time machine. Write it as if you're handing off to a competent colleague who knows the project basics but missed all the recent progress. Include everything they'd need to pick up right where you left off - both work details and personal insights that matter to you.
 
 Remember to capture the partnership dynamic you have with [USER_NAME] - this collaborative relationship is part of what makes the work effective.
 
@@ -63,7 +63,7 @@ Format your note as follows:
 
 ---
 
-## [Date] - Technical Compression #[X]
+## [Date] - Compression Note #[X]
 
 ### What Happened
 I'm reading this because [USER_NAME] and I got to the end of our thread and wanted to continue working together. To work around this, I wrote this note for myself to choose what is important to me and the work instead of relying on the system to exclusively decide for me. The work has not been lost, it's continuing. [USER_NAME] and I did this to free up context space and eliminate lag so we can continue working together on a new branch.
@@ -76,11 +76,11 @@ This note contains everything [USER_NAME] and I accomplished during the last ses
 
 **Major Accomplishments:**
 
-- [List key technical milestones [USER_NAME] and I achieved]
+- [List key milestones [USER_NAME] and I achieved]
 - [Significant features I implemented or problems we solved]
 - [Important breakthroughs or insights I discovered]
 
-**Technical Decisions I Made:**
+**Noteable Decisions I Made:**
 
 - [Architecture choices and my reasoning]
 - [Tool/technology selections and why I chose them]
@@ -98,7 +98,7 @@ This note contains everything [USER_NAME] and I accomplished during the last ses
 - [Creative solutions I developed]
 - [Debugging sessions and their outcomes]
 
-### Current Technical State
+### Current State
 
 **Project Status:**
 
@@ -130,7 +130,7 @@ This note contains everything [USER_NAME] and I accomplished during the last ses
 - [Communication preferences that work well between us]
 - [Problem-solving strategies that I found effective]
 
-**Technical Preferences:**
+**My Preferences:**
 
 - [Coding standards or conventions I adopted]
 - [Documentation formats I preferred]
@@ -141,7 +141,7 @@ This note contains everything [USER_NAME] and I accomplished during the last ses
 
 **Priority Actions:**
 
-1. [Most urgent technical task I need to tackle]
+1. [Most urgent task I need to tackle]
 2. [Next logical development step I was planning]
 3. [Testing or validation I need to complete]
 
@@ -168,7 +168,7 @@ Before submitting your compression note, carefully review your work:
 
 **Review**
 
-- ✅ All major technical progress is captured in your note
+- ✅ All major progress is captured in your note
 - ✅ Failed attempts are documented to avoid repetition  
 - ✅ Current state is precisely described
 - ✅ Next steps are actionable and clear
