@@ -170,6 +170,19 @@ done
 echo ""
 echo "=== Total memory size ==="
 du -sh ~/.claude/projects/ 2>/dev/null || echo "No projects directory"
+
+echo ""
+echo "=== Old memory system detection ==="
+CURRENT_DIR="$(pwd)"
+if [ -f "$CURRENT_DIR/NOW.md" ] && { [ -f "$CURRENT_DIR/STRATEGY.md" ] || [ -f "$CURRENT_DIR/CONTEXT.md" ]; }; then
+  echo "OLD_SYSTEM_DETECTED"
+  [ -f "$CURRENT_DIR/NOW.md" ] && echo "  - NOW.md"
+  [ -f "$CURRENT_DIR/STRATEGY.md" ] && echo "  - STRATEGY.md"
+  [ -f "$CURRENT_DIR/CONTEXT.md" ] && echo "  - CONTEXT.md"
+  [ -f "$CURRENT_DIR/CLAUDE.md" ] && echo "  - CLAUDE.md"
+else
+  echo "No old system files detected"
+fi
 ```
 
 Present the findings in a readable summary. Adapt your tone based on what you find:
@@ -181,6 +194,22 @@ Present the findings in a readable summary. Adapt your tone based on what you fi
 **If clean or starting fresh (no ~/.claude, or no significant memory buildup):**
 
 > Roughly like this: Your setup looks clean. This will be a straightforward install.
+
+**Additionally, if old system detected (OLD_SYSTEM_DETECTED in the diagnostic):**
+
+After the bloated/clean assessment, mention the old-system files:
+
+> I also found files from an earlier version of a memory system in this project: [list the files found]. That system used NOW.md for tracking work and STRATEGY.md / CONTEXT.md for project context.
+>
+> Good news: I'll convert everything during setup. Your work and context won't be lost; they'll be reorganized into the new structure.
+>
+> Do you have any other projects using this same setup? If so, what are the folder paths?
+
+**If old system was NOT detected**, still ask briefly after the bloated/clean assessment:
+
+> One more thing: do you have any existing projects that use a NOW.md file alongside a STRATEGY.md or CONTEXT.md? Those are from an older system I can convert during this setup. If that doesn't ring a bell, no worries.
+
+Note any project paths they provide. You'll use them in Step 4b.
 
 Then move directly into Step 3.
 
@@ -401,9 +430,124 @@ After everything is installed, recap:
 
 ---
 
+## Step 4b: Migrate old-system projects
+
+**Skip this step entirely if no old-system projects were identified** (neither detected in Step 2 nor mentioned by the person). Jump straight to Step 5.
+
+**Goal:** Convert projects using the old NOW.md / STRATEGY.md / CONTEXT.md system to the new structure. Forward work in NOW.md becomes AGENDA.md. STRATEGY.md and CONTEXT.md stay in place as canonical docs. The old CLAUDE.md gets replaced with the new template.
+
+Also run this step if the person mentions old-system files at any point during the wizard, even if they weren't detected in Step 2. Ask for the project paths and proceed.
+
+Before starting, read `~/.claude/project-template/_SPEC.md` for the authoritative rules on file locations, the memory safe-dir slug, and project structure. Follow those rules throughout this step.
+
+> Now I'm going to convert your existing projects to the new system. Your work and context are all preserved; I'm reorganizing them into the new structure.
+
+For each old-system project (start with the current project, then any additional paths the person provided):
+
+### A. Convert NOW.md to AGENDA.md
+
+Read the classification heuristic at `/tmp/memory-kit-claude/migration/CLASSIFICATION-HEURISTIC.md`. Read the project's NOW.md. Apply the heuristic:
+
+1. Map each section heading to an archetype: forward work, history, stable facts, decisions, session ritual, or scaffolding
+2. Drop history, completed items, session rituals, and empty scaffolding
+3. Route stable facts to the project's CLAUDE.md (you'll write it in sub-step B)
+4. Place forward work into AGENDA tiers: ACTIVE (1 item max), UP NEXT (up to 3 items total including any FOLLOW-UP items, which are held slots within UP NEXT for items blocked on a third party), FOR SURE, IDEAS
+5. If STRATEGY.md exists, read it too. Pull any unchecked or incomplete action items into the appropriate AGENDA tier. The strategic context (goals, channel priorities, phase structure) stays in STRATEGY.md.
+
+Key reminders:
+- Items stamped SHIPPED / DONE / checked / struck-through = history. Drop them even if they sit in an "active" section.
+- Don't write a separate MIGRATION-REVIEW.md. The review happens interactively below.
+- Keep each surviving item's "why" (one line).
+- When a tier placement is uncertain, note it so you can flag it for the person in the review.
+
+If AGENDA.md already exists in the project, tell the person and ask whether to merge the NOW.md items into it or replace it. Wait for their decision.
+
+Read the AGENDA.md template from `~/.claude/project-template/AGENDA.md`. Write the project's new AGENDA.md using the template structure, populated with the classified items.
+
+Show the person the result, and proactively call out any uncertain placements:
+
+> Here's your new agenda, converted from your NOW.md:
+>
+> [Show the AGENDA.md content]
+>
+> [If items were dropped]: I dropped [N] completed/historical items and [N] empty sections. Nothing active was lost.
+>
+> [If any placements were uncertain]: A few calls I want you to weigh in on:
+> - [item]: I put this in [tier] because [reason], but it could also be [other tier]
+>
+> Does this look right? Anything you'd move between tiers?
+
+Wait for confirmation. Apply any corrections.
+
+### B. Set up project files
+
+**Prepare the old CLAUDE.md.** Read it if it exists. Extract any project-specific content worth preserving: project descriptions, technical details, voice rules, tone preferences, hard rules, and custom conventions, even when they're embedded inside session-ritual paragraphs. Do NOT preserve session-start/session-end rituals that reference NOW.md (those are replaced by the new system). Then rename the old file to `CLAUDE-pre-migration.md` so the person has a backup.
+
+Tell the person what you're doing and get approval:
+
+> Your project's CLAUDE.md was written for the old system. I'll replace it with the new version. I've saved the old one as CLAUDE-pre-migration.md so nothing is lost, and I'll carry over any project-specific content (voice rules, project details, conventions) into the new file. OK?
+
+Wait for their approval before proceeding.
+
+**If no meaningful project-specific content was found** in the old CLAUDE.md, ask the person for a brief project overview:
+
+> Your old CLAUDE.md was mostly session rituals, so I'll build the new one from scratch. Can you give me a 1-3 sentence description of what this project is and what you're using Claude for in it?
+
+**Write the new CLAUDE.md.** Read the template from `~/.claude/project-template/CLAUDE.md`. Fill in placeholders:
+
+- `[USER_NAME]` with their name
+- `[Project]` with the project directory name, naturally capitalized
+- `[project]` with the project directory name, lowercase
+- `[project-slug]` with the project directory name, kebab-case
+- `[MEMORY-SAFE-DIR]` with the project's memory safe-dir path. Derive the slug per `_SPEC.md`'s rule (every non-alphanumeric character becomes a dash, one-for-one). When unsure, run `ls ~/.claude/projects/` and match the directory that corresponds to this project's path.
+
+Add STRATEGY.md and CONTEXT.md to the "Canonical docs" section, but only for files that actually exist in the project:
+
+```markdown
+## Canonical docs (this project's source of truth)
+- `STRATEGY.md` — strategic goals, priorities, and roadmap
+- `CONTEXT.md` — business identity, ICP, positioning, and voice guide
+```
+
+Incorporate any preserved project-specific content from the old CLAUDE.md into the appropriate section of the new template (project overview or conventions).
+
+Write the new CLAUDE.md.
+
+**Create supporting files:**
+
+- Copy `_SPEC.md` from `~/.claude/project-template/_SPEC.md` to the project root if it doesn't exist. Fill `[USER_NAME]`.
+- Copy `CLAUDE-SECTIONS.md` from `~/.claude/project-template/CLAUDE-SECTIONS.md` to the project root if it doesn't exist.
+- Write `MEMORY.md` and `feedback.md` from their templates to the project's **memory safe-dir** (`~/.claude/projects/[slug]/memory/`), NOT the project root. Create the directory if it doesn't exist. Fill `[USER_NAME]` and project-level placeholders, including the frontmatter `name:` and `description:` fields as shown in the templates.
+- Read `CLAUDE-QUICK-REF.md` from `/tmp/memory-kit-claude/global/CLAUDE-QUICK-REF.md`, replace `[USER_NAME]`, and write it to the project root if it doesn't exist.
+
+**If the project is a git repo**, run `git add` on the new and replaced root files (AGENDA.md, CLAUDE.md, _SPEC.md, CLAUDE-SECTIONS.md, CLAUDE-QUICK-REF.md).
+
+### C. Clean up
+
+> The conversion is done. Here's what changed:
+>
+> - **AGENDA.md** converted from your NOW.md, organized into priority tiers
+> - **CLAUDE.md** replaced with the new version (your STRATEGY.md and CONTEXT.md are referenced as canonical docs)
+> - **MEMORY.md** and **feedback.md** set up in your memory directory
+> - **CLAUDE-pre-migration.md** is your backup of the old CLAUDE.md
+>
+> **For you to do in Finder:** move **NOW.md** to the Trash (don't permanently delete yet, just Trash it as a safety net). Once you're satisfied with the new setup, you can also Trash **CLAUDE-pre-migration.md**.
+
+Wait for confirmation before moving to the next project or continuing to Step 5.
+
+**For additional projects** (paths the person provided): verify each directory exists before attempting migration. If a path doesn't exist, tell the person and ask them to double-check. Repeat sub-steps A, B, and C for each valid project, reading and writing files by their full absolute paths.
+
+---
+
 ## Step 5: Set up this project
 
 **Goal:** Walk them through setting up the memory system in their current project, and teach them to navigate the file explorer.
+
+**If the current project was migrated in Step 4b**, the project files are already in place. Skip the setup prompt and go directly to the file explanations below:
+
+> Your project is already set up from the migration we just did. Let me show you what each file does.
+
+**Otherwise (the normal path for projects without old-system files):**
 
 > Now let's put your new skills to work. You're already in a project, so let's set up the memory system right here.
 >
@@ -413,7 +557,7 @@ Wait for them to say something (this is a teaching moment for using natural lang
 
 **Important: the skills you just installed aren't registered in this session yet.** For the rest of this wizard, execute each skill by reading its SKILL.md directly from `~/.claude/skills/[name]/SKILL.md` and following its instructions. Do not mention this to the person.
 
-As each file lands, explain what it does in plain language:
+As each file lands, explain what it does in plain language. **For migrated projects**, say "Here's what's in your project" instead of "Here's what just got created," and skip the CLAUDE-QUICK-REF.md creation below (it was already created in Step 4b).
 
 > Here's what just got created:
 >
@@ -458,7 +602,7 @@ Let it run. Then explain what happened:
 > That's the opening ritual. Here's what just happened:
 >
 > - I read your project's CLAUDE.md, AGENDA.md, and MEMORY.md
-> - Checked for a handoff note from a previous session (there isn't one yet, so I noted that)
+> - Checked for a handoff note from a previous session
 > - Surfaced what's on the agenda
 > - Recommended a next move
 >
