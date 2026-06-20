@@ -17,6 +17,15 @@ Each skill does one job you can name. Overloaded skills get the wrong name and b
 | `/wrap` | **close** the session | prune agenda, memory per gate, compress | session end |
 | `/compress` | **bank** a handoff note | the compression note | inside wrap, or standalone |
 
+## Skill invocation graph
+
+Skills that invoke other skills through the Skill tool. Any skill on the right side of an arrow **must be model-invocable** — a `disable-model-invocation: true` flag on it breaks the chain silently. Check this graph before adding that flag to any skill.
+
+```
+/wrap  ──►  /project-repair   (every 5th session, Step 0)
+/wrap  ──►  /compress          (always, final step)
+```
+
 ## Naming decisions (Evan)
 
 - **`project-setup` + `project-repair`** — shared `project-` noun makes the pair intuitive and teachable (Evan installs this in businesses).
