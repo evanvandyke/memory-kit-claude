@@ -2,7 +2,6 @@
 name: project-repair
 description: "Audit a project's doc system against the structure spec. Auto-fix safe drift, escalate structural issues."
 when_to_use: "Called by /wrap every 5 sessions, or on demand when user asks to check project health."
-disable-model-invocation: true
 ---
 
 # Project Repair

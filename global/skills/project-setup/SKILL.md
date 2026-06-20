@@ -2,7 +2,6 @@
 name: project-setup
 description: "Set up the doc/memory system in a new project. Creates CLAUDE.md, AGENDA.md, MEMORY.md, feedback.md, and reference files."
 when_to_use: "User says 'set up this project' or wants to initialize the memory system in a new project."
-disable-model-invocation: true
 ---
 
 # Project Setup
