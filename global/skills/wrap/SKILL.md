@@ -9,7 +9,7 @@ when_to_use: "User says 'wrap it up,' 'let's wrap,' 'we're done,' 'close the ses
 Close out the session. Work through each step end to end; skip what doesn't apply; keep additions tight.
 
 ## Step 0: Session number + repair check
-**Canonical rule: N = the integer in the highest-numbered note filename in `Docs_Compressions/` (zero-padded, no suffixes); an empty/absent folder = no prior sessions.** `/wrap` is closing the *current* session and about to write its note, so this session's number is that highest N **plus one** (empty/absent folder → session 1). **If that number is divisible by 5, kick off `/project-repair` now** — launch its two independent auditors in the background so they work through the steps below while you finish wrapping.
+**Canonical rule: N = the integer in the highest-numbered note filename in `Docs_Compressions/` (zero-padded, no suffixes); an empty/absent folder = no prior sessions.** `/wrap` is closing the *current* session and about to write its note, so this session's number is that highest N **plus one** (empty/absent folder → session 1). **If that number is divisible by 5, invoke `/project-repair` — this is mandatory, not one of the steps you may skip.** Repair always applies on a 5th session regardless of session length, context pressure, or perceived project health. Launch its two independent auditors in the background so they work through the steps below while you finish wrapping.
 
 ## Step 1: Prune the agenda
 In `AGENDA.md`: delete completed items (completion = deletion), then advance the tiers per the `/agenda` method (rise work up, refill from For Sure). Leave the agenda correct for next session.
