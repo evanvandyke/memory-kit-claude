@@ -18,12 +18,11 @@ If that number is north of 10 for any single project, you're already in the zone
 
 ## What You Get
 
-**6 skills** (available in every project):
+**5 skills** (available in every project):
 
 - `/start` - Open a session deliberately. Reads your project docs, picks up from the last compression note, surfaces what's waiting, and recommends the next move.
 - `/wrap` - Close a session cleanly. Prunes the agenda, saves memory through a quality gate, triggers repair on cadence, and banks a handoff note.
 - `/compress` - Write your own handoff note before context compacts, so your future self continues from your chosen context instead of the system's summary.
-- `/agenda` - Manage a forward-only priority agenda. Four tiers, rising priority, completed items deleted instead of archived.
 - `/project-setup` - Set up a new project's doc system from templates in one pass.
 - `/project-repair` - Audit a project against the structure spec, auto-fix safe drift, escalate the rest. Runs every 5th session automatically.
 

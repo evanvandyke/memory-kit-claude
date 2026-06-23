@@ -12,7 +12,6 @@ Each skill does one job you can name. Overloaded skills get the wrong name and b
 |---|---|---|---|
 | `/project-setup` | **create** structure | the doc set as artifacts | once, at project birth |
 | `/project-repair` | **repair** drift | MEMORY / feedback / structure health | every 5th session (wrap-triggered) |
-| `/agenda` | **operate** forward work | content flow inside AGENDA.md | continuously, in-session |
 | `/start` | **open** the session | reading + (new) the repair-clock nudge | session start |
 | `/wrap` | **close** the session | prune agenda, memory per gate, compress | session end |
 | `/compress` | **bank** a handoff note | the compression note | inside wrap, or standalone |
@@ -100,7 +99,7 @@ If `/project-setup` defines "a correct project" and `/project-repair` *also* def
 
 ## Decided
 
-Split skills · names (setup/repair; "repair" not "cleanup") · cadence = every 5 sessions · wrap-triggered · integer session numbers in `/compress` (no letter sub-numbers) · shared-spec stacking · two independent auditors + conditional reconciler · mechanical-auto / structural-review · inner-outer classification · memory = two files, gate-over-count, repair as backstop · CLAUDE.md stays lean (no Key-Decisions catchall; architecture/decisions live in canonical docs) · decompress absorbed into start · compress kept separate but called by wrap.
+Split skills · names (setup/repair; "repair" not "cleanup") · cadence = every 5 sessions · wrap-triggered · integer session numbers in `/compress` (no letter sub-numbers) · shared-spec stacking · two independent auditors + conditional reconciler · mechanical-auto / structural-review · inner-outer classification · memory = two files, gate-over-count, repair as backstop · CLAUDE.md stays lean (no Key-Decisions catchall; architecture/decisions live in canonical docs) · decompress absorbed into start · compress kept separate but called by wrap · /agenda retired (formatting rules absorbed into spec + template, advancement method inlined in wrap).
 
 ## Resolved (these shipped during the build)
 

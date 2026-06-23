@@ -20,7 +20,6 @@ How the global constitution, the skills (gates), the per-project templates, and 
 │   /project-setup   creates a project from _SPEC (stamps the templates)│
 │   /project-repair  audits + fixes drift against _SPEC (every 5th sess)│
 │   /start           opens a session   (absorbs the old /decompress)    │
-│   /agenda          agenda ops: add · move · demote · review · surface │
 │   /wrap            closes a session  → calls /compress                │
 │   /compress        writes the self-authored handoff note              │
 └─────────────────────────────────────────────────────────────────────┘
@@ -68,19 +67,18 @@ EVERY session
                          │
                          ▼
   ┌──────────────────────────────────────────────────────────────────┐
-  │ WORK  →  /agenda fires continuously (natural-language triggered):  │
+  │ WORK  →  agenda edits happen naturally during the session:          │
   │   • add      route to For Sure / Up Next / Ideas  + capture the why │
   │   • swap     before each new action: delete done Active, write next │
   │   • surface  when a new item becomes Active                         │
   │   • rise     Active done → top *work* slot climbs in (skip Follow-Up) → draw from For Sure │
-  │   • review   Up Next empty → qualify Ideas, then sequence next 4     │
   │                                                                      │
   │   memory write? run the router + long-term gate, surface it (never silent) │
   └──────────────────────────────────────────────────────────────────┘
                          │
                          ▼
   ┌─ /wrap  (Evan closes the session) ─────────────────────────────────┐
-  │   1. /agenda prune: delete completed, advance the tiers             │
+  │   1. prune: delete completed, advance the tiers                     │
   │   2. update CLAUDE.md stable facts (only if a fact changed)         │
   │   3. memory writes per the gate (surfaced)                          │
   │   4. /compress → self-authored note → Docs_Compressions/  (LAST STEP) │
@@ -117,7 +115,7 @@ Memory is the *last resort*, not the first: route first, and only what survives 
 **✅ Design — complete.** The model is designed and rationalized: the four-tier rising agenda, the two-file memory, the skill split (`SKILL-ARCHITECTURE.md`), the router, the section menu. The origin design and execution sessions (since retired) seeded this; the nuts-bolts prototype migration that proved the model is history now, not active work.
 
 **✅ Drafted in BUILD — complete.** Every skill and template is a finished new-model draft (verified by the cold-read + a state scout):
-- skills: `project-setup` · `project-repair` · `start` (absorbs decompress) · `wrap` · `compress` · `agenda` · `decompress` (retired tombstone)
+- skills: `project-setup` · `project-repair` · `start` (absorbs decompress) · `wrap` · `compress` · `decompress` (retired tombstone) · `agenda` (retired — absorbed into spec + template)
 - templates: `_SPEC` (the authority) · `CLAUDE` · `CLAUDE-SECTIONS` · `AGENDA` · `MEMORY` · `feedback`
 - migration: the fleet converted 2026-06-05; `migrate-fleet` retired and trashed 2026-06-11. The folder now holds only two live reference docs (`FAN-OUT-FINDINGS.md`, `FLEET-WORKLIST.md`) pending their queued agenda items.
 
@@ -129,7 +127,7 @@ Memory is the *last resort*, not the first: route first, and only what survives 
 - ✅ **session-2 readiness-gate heal** — a second cold-read against the promotion gate, all healed 2026-06-04: the consolidate-don't-trash memory behavior, the `Docs_Compressions/` repair-clock holes, and the meta-doc contradictions where these blueprint docs had drifted from the authoritative `_SPEC`/skills (cadence, reading order, the phantom "manifest"). See `COLD-READ-FINDINGS.md`.
 
 **✅ Promotion — the rollout** (each moved up to live `~/.claude/`, one reviewed file at a time; tracked in root `AGENDA.md`):
-- skills promoted; the live `decompress.md` deleted; `/agenda` installed live
+- skills promoted; the live `decompress.md` deleted
 - `/project-setup` run on this project to stand up its own MEMORY + feedback (dogfood complete)
 
 **⬜ Global `~/.claude/CLAUDE.md` redundancy trim** — the Subagents/Coach-Mode rename shipped (live + BUILD in sync); the leftover low-priority redundancy cut (the "four checks" dedupe / N3) is staged in `global-CLAUDE-trim-notes.md`. Tracked as the residual-polish item in root `AGENDA.md`; do when convenient.

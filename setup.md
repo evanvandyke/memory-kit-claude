@@ -380,7 +380,6 @@ Start with a brief explainer about what skills are and how to use them:
 > - `/wrap` closes a session. I save anything worth remembering, clean up the agenda, and write a handoff note so the next session picks up where this one left off. Just say "wrap it up."
 >
 > **Skills that work behind the scenes:**
-> - `/agenda` manages your priorities through natural conversation. You'll never need to call this directly. Just tell me what you're working on and I'll handle it.
 > - `/compress` captures your progress if a session runs long. `/wrap` does this automatically, so you'll rarely think about it.
 > - `/project-repair` checks your project for problems every 5 sessions. It runs inside `/wrap`, so it takes care of itself.
 >

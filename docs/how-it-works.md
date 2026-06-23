@@ -92,7 +92,7 @@ The goal is orientation without re-exploration. You pick up where you left off, 
 
 ### Working
 
-During the session, the agenda manages itself through natural conversation. When something comes up, say `/agenda add [idea]` and Claude asks which tier before placing it. When work finishes, the agenda advances: the top UP NEXT slot climbs into ACTIVE, the freed slot draws from FOR SURE.
+During the session, the agenda manages itself through natural conversation. When something comes up, just say what needs to go on the agenda and Claude asks which tier before placing it. When work finishes, the agenda advances: the top UP NEXT slot climbs into ACTIVE, the freed slot draws from FOR SURE.
 
 ### /wrap closes a session
 
@@ -180,7 +180,7 @@ The global partnership file. It loads in every session, in every project, automa
 
 ### ~/.claude/commands/
 
-The six skills live here as `.md` files. Claude Code surfaces them as slash commands (`/start`, `/wrap`, `/compress`, `/agenda`, `/project-setup`, `/project-repair`) available in every project. They reference the templates and the spec by path, so changing a template or a rule in one place propagates everywhere.
+The five skills live here as `.md` files. Claude Code surfaces them as slash commands (`/start`, `/wrap`, `/compress`, `/project-setup`, `/project-repair`) available in every project. They reference the templates and the spec by path, so changing a template or a rule in one place propagates everywhere.
 
 ### ~/.claude/project-template/
 
