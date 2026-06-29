@@ -6,6 +6,11 @@ Read top to bottom = hottest to coldest. When Active finishes, the top *work* sl
 
 > **Tier headers, annotations, and description lines below are structural — preserve them when editing.**
 
+> **Management rules:**
+> - **Completion is deletion.** Finished items leave. No "done" section.
+> - **Demotion, not deletion.** When a slot is needed, demote the lowest item back to FOR SURE. Never delete an unfinished item to make room.
+> - **Default is hold.** An unfinished Active stays Active unless there's a real signal to move it.
+
 ---
 
 ## ACTIVE  *(limit 1)*
