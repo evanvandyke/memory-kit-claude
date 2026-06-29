@@ -504,8 +504,8 @@ Add STRATEGY.md and CONTEXT.md to the "Canonical docs" section, but only for fil
 
 ```markdown
 ## Canonical docs (this project's source of truth)
-- `STRATEGY.md` — strategic goals, priorities, and roadmap
-- `CONTEXT.md` — business identity, ICP, positioning, and voice guide
+- `STRATEGY.md` -- strategic goals, priorities, and roadmap
+- `CONTEXT.md` -- business identity, ICP, positioning, and voice guide
 ```
 
 Incorporate any preserved project-specific content from the old CLAUDE.md into the appropriate section of the new template (project overview or conventions).

@@ -1,10 +1,10 @@
-# Documentation System Map  *(blueprint — promoted to live, in production)*
+# Documentation System Map  *(blueprint -- promoted to live, in production)*
 
-How the global constitution, the skills (gates), the per-project templates, and the project docs connect — and **what triggers what**. This is the build reference.
+How the global constitution, the skills (gates), the per-project templates, and the project docs connect -- and **what triggers what**. This is the build reference.
 
 ---
 
-## Layer 1 — the static architecture (who holds what)
+## Layer 1 -- the static architecture (who holds what)
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
@@ -50,7 +50,7 @@ How the global constitution, the skills (gates), the per-project templates, and 
 
 ---
 
-## Layer 2 — the lifecycle (what triggers what)
+## Layer 2 -- the lifecycle (what triggers what)
 
 ```
 ONCE per project
@@ -85,11 +85,11 @@ EVERY session
   └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**/compress is CONTAINED in /wrap (its final step).** Run /compress *standalone* only to (a) relieve context mid-session, or (b) write the note while deliberately skipping wrap's other steps — e.g. memory is mid-change, like the session that built this map.
+**/compress is CONTAINED in /wrap (its final step).** Run /compress *standalone* only to (a) relieve context mid-session, or (b) write the note while deliberately skipping wrap's other steps -- e.g. memory is mid-change, like the session that built this map.
 
 ---
 
-## Layer 3 — the router (where every piece of information lives)
+## Layer 3 -- the router (where every piece of information lives)
 
 The single rule that keeps the docs from drifting into each other:
 
@@ -108,28 +108,28 @@ Memory is the *last resort*, not the first: route first, and only what survives 
 
 ## Build status - current vs. target
 
-*Home base / implementation tracker. Keep it honest: a check means "done **at this stage**," and the stages are distinct — **drafted in BUILD** is not **promoted to live.***
+*Home base / implementation tracker. Keep it honest: a check means "done **at this stage**," and the stages are distinct -- **drafted in BUILD** is not **promoted to live.***
 
 *Promotion now runs in three stages: **BUILD → live → kit** (author in BUILD, promote to Evan's live `~/.claude/`, then generalize into the distributable kit). See the root `README.md` "Promotion flow" section.*
 
-**✅ Design — complete.** The model is designed and rationalized: the four-tier rising agenda, the two-file memory, the skill split (`SKILL-ARCHITECTURE.md`), the router, the section menu. The origin design and execution sessions (since retired) seeded this; the nuts-bolts prototype migration that proved the model is history now, not active work.
+**✅ Design -- complete.** The model is designed and rationalized: the four-tier rising agenda, the two-file memory, the skill split (`SKILL-ARCHITECTURE.md`), the router, the section menu. The origin design and execution sessions (since retired) seeded this; the nuts-bolts prototype migration that proved the model is history now, not active work.
 
-**✅ Drafted in BUILD — complete.** Every skill and template is a finished new-model draft (verified by the cold-read + a state scout):
-- skills: `project-setup` · `project-repair` · `start` (absorbs decompress) · `wrap` · `compress` · `decompress` (retired tombstone) · `agenda` (retired — absorbed into spec + template)
+**✅ Drafted in BUILD -- complete.** Every skill and template is a finished new-model draft (verified by the cold-read + a state scout):
+- skills: `project-setup` · `project-repair` · `start` (absorbs decompress) · `wrap` · `compress` · `decompress` (retired tombstone) · `agenda` (retired -- absorbed into spec + template)
 - templates: `_SPEC` (the authority) · `CLAUDE` · `CLAUDE-SECTIONS` · `AGENDA` · `MEMORY` · `feedback`
 - migration: the fleet converted 2026-06-05; `migrate-fleet` retired and trashed 2026-06-11. The folder now holds only two live reference docs (`FAN-OUT-FINDINGS.md`, `FLEET-WORKLIST.md`) pending their queued agenda items.
 
-**Cold-read gaps — healed pre-promotion** (full triage in `COLD-READ-FINDINGS.md`):
-- ✅ **B1** — `Technical-Compression-Guide.md` banked into `BUILD/dot-claude/` + registered in the README promotion map.
-- ✅ **B3** — RESOLVED: doc-system files are **committed, not gitignored** (Evan's call); policy written into `_SPEC`.
-- ✅ **B4** — on-demand `/project-repair` derives `[N]` from the `Docs_Compressions/` note count.
-- ✅ **session-1 cold-read cleared** — the spec-authority, memory-entry-cap, historical-marking, and vocab nits are all fixed (see `COLD-READ-FINDINGS.md`).
-- ✅ **session-2 readiness-gate heal** — a second cold-read against the promotion gate, all healed 2026-06-04: the consolidate-don't-trash memory behavior, the `Docs_Compressions/` repair-clock holes, and the meta-doc contradictions where these blueprint docs had drifted from the authoritative `_SPEC`/skills (cadence, reading order, the phantom "manifest"). See `COLD-READ-FINDINGS.md`.
+**Cold-read gaps -- healed pre-promotion** (full triage in `COLD-READ-FINDINGS.md`):
+- ✅ **B1** -- `Technical-Compression-Guide.md` banked into `BUILD/dot-claude/` + registered in the README promotion map.
+- ✅ **B3** -- RESOLVED: doc-system files are **committed, not gitignored** (Evan's call); policy written into `_SPEC`.
+- ✅ **B4** -- on-demand `/project-repair` derives `[N]` from the `Docs_Compressions/` note count.
+- ✅ **session-1 cold-read cleared** -- the spec-authority, memory-entry-cap, historical-marking, and vocab nits are all fixed (see `COLD-READ-FINDINGS.md`).
+- ✅ **session-2 readiness-gate heal** -- a second cold-read against the promotion gate, all healed 2026-06-04: the consolidate-don't-trash memory behavior, the `Docs_Compressions/` repair-clock holes, and the meta-doc contradictions where these blueprint docs had drifted from the authoritative `_SPEC`/skills (cadence, reading order, the phantom "manifest"). See `COLD-READ-FINDINGS.md`.
 
-**✅ Promotion — the rollout** (each moved up to live `~/.claude/`, one reviewed file at a time; tracked in root `AGENDA.md`):
+**✅ Promotion -- the rollout** (each moved up to live `~/.claude/`, one reviewed file at a time; tracked in root `AGENDA.md`):
 - skills promoted; the live `decompress.md` deleted
 - `/project-setup` run on this project to stand up its own MEMORY + feedback (dogfood complete)
 
-**⬜ Global `~/.claude/CLAUDE.md` redundancy trim** — the Subagents/Coach-Mode rename shipped (live + BUILD in sync); the leftover low-priority redundancy cut (the "four checks" dedupe / N3) is staged in `global-CLAUDE-trim-notes.md`. Tracked as the residual-polish item in root `AGENDA.md`; do when convenient.
+**⬜ Global `~/.claude/CLAUDE.md` redundancy trim** -- the Subagents/Coach-Mode rename shipped (live + BUILD in sync); the leftover low-priority redundancy cut (the "four checks" dedupe / N3) is staged in `global-CLAUDE-trim-notes.md`. Tracked as the residual-polish item in root `AGENDA.md`; do when convenient.
 
-**✅ Validated fleet-wide** — the migration dry-run (sluice → aperture-app) cleared, and the whole fleet converted 2026-06-05, stable.
+**✅ Validated fleet-wide** -- the migration dry-run (sluice → aperture-app) cleared, and the whole fleet converted 2026-06-05, stable.
