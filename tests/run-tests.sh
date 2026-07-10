@@ -795,6 +795,48 @@ run_check "$WORK/h-undo-nothing" "$RA" --apply --undo
 assert_eq "apply-undo-exclusive: exit 3" "3" "$RC"
 assert_grep "apply-undo-exclusive: message names both flags" "mutually exclusive" "$OUT"
 
+# ###########################################################################
+# CLIENT-FACING REPORT PROSE
+# ###########################################################################
+
+# ================= P1. undo promise only when something was actually backed up
+H="$WORK/h-promise-none"; mkdir -p "$H"; home_synced "$H"
+run_check "$H" "$REPO" --apply
+assert_eq "undo-promise: fully synced apply run exits 0" "0" "$RC"
+if grep -q "undo the last kit update" "$REPORT"; then
+  bad "undo-promise: absent when the run backed up nothing" "promise found in report"
+else
+  ok "undo-promise: absent when the run backed up nothing"
+fi
+if [ -d "$H/kit-backups" ]; then
+  bad "undo-promise: synced apply run creates no backup dir" "kit-backups exists"
+else
+  ok "undo-promise: synced apply run creates no backup dir"
+fi
+
+H="$WORK/h-promise-yes"; mkdir -p "$H"; apply_home_clean "$H"
+run_check "$H" "$RA" --apply
+assert_eq "undo-promise: writing apply run exits 0" "0" "$RC"
+assert_grep "undo-promise: present when the run backed files up" "undo the last kit update" "$REPORT"
+
+# ===================== P2. "Needs your attention" section rides escalations
+H="$WORK/h-attention"; mkdir -p "$H"; apply_home "$H"
+printf '# A\nlocally rewritten a\n' > "$H/skills/a/SKILL.md"
+run_check "$H" "$RA" --apply
+assert_eq "needs-attention: diverged apply run exits 2" "2" "$RC"
+assert_grep "needs-attention: section present on a diverged run" "## Needs your attention" "$REPORT"
+assert_grep "needs-attention: diverged explained in plain language" "the kit also improved it" "$REPORT"
+assert_eq "needs-attention: diverged a still classified diverged" "diverged" "$(state_of "$REPORT" skills/a/SKILL.md)"
+
+H="$WORK/h-noattention"; mkdir -p "$H"; home_synced "$H"
+run_check "$H" "$REPO" --apply
+assert_eq "needs-attention: clean apply run exits 0" "0" "$RC"
+if grep -q "Needs your attention" "$REPORT"; then
+  bad "needs-attention: absent on a clean run" "section found in clean report"
+else
+  ok "needs-attention: absent on a clean run"
+fi
+
 # ================================================================== summary
 echo
 echo "=== $PASS passed, $FAIL failed ==="

@@ -477,6 +477,7 @@ if ! python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$CONFIG" 2>/dev
   echo "kit-update-check: config at $CONFIG is not valid JSON." >&2
   exit 3
 fi
+if [ "$CFG_AUTO" = "true" ]; then AUTO_PHRASE="auto-update is on"; else AUTO_PHRASE="auto-update is off"; fi
 
 UPSTREAM="$UPSTREAM_OVERRIDE"
 [ -n "$UPSTREAM" ] || UPSTREAM="$CFG_SOURCE"
@@ -742,9 +743,9 @@ while IFS='	' read -r it src typ pers ret rf checks own modep cons <&9; do
     fi
     lsha="-"; [ -f "$live" ] && lsha=$(sha_of "$live")
     if [ -z "$missing" ]; then
-      emit "generated-ok" "$it" "nothing (all section checks pass; user-owned, never written)" "-" "-" "$lsha"
+      emit "generated-ok" "$it" "nothing (all expected sections present; this file is yours -- the kit never writes it)" "-" "-" "$lsha"
     else
-      emit "generated-failed" "$it" "escalate: failed checks:$missing (user-owned, never written)" "-" "-" "$lsha"
+      emit "generated-failed" "$it" "needs a look -- missing:$missing (this file is yours; the kit never writes it)" "-" "-" "$lsha"
     fi
     continue
   fi
@@ -756,7 +757,7 @@ while IFS='	' read -r it src typ pers ret rf checks own modep cons <&9; do
       lsha=$(sha_of "$live")
       emit "retired-present" "$it" "would move to kit-retired/<date>/ (a move, never a delete)" "-" "-" "$lsha"
     else
-      emit "retired-absent" "$it" "nothing (retired and not present)" "-" "-" "-"
+      emit "retired-absent" "$it" "nothing (retired from the kit and not on your machine)" "-" "-" "-"
     fi
     plan_row "$LAST_STATE" "$it" "$own" "-" "$cons" "0" "-" "-"
     continue
@@ -796,12 +797,12 @@ while IFS='	' read -r it src typ pers ret rf checks own modep cons <&9; do
   if [ "$REBASELINE" = "1" ]; then
     if [ -f "$live" ]; then
       if cmp -s "$live" "$RH"; then
-        emit "already-current" "$it" "record only (re-baseline: matches render(HEAD))" "-" "$rh_sha" "$lsha"
+        emit "already-current" "$it" "nothing to change (already matches the kit's latest version)" "-" "$rh_sha" "$lsha"
       else
-        emit "diverged" "$it" "never touch; escalate (anchor lost / no manifest at anchor -- re-baseline needed; live differs from render(HEAD))" "-" "$rh_sha" "$lsha"
+        emit "diverged" "$it" "kept your version (update history unavailable; your file differs from the kit's latest version)" "-" "$rh_sha" "$lsha"
       fi
     else
-      emit "missing" "$it" "would install under opt-in (re-baseline: absent live)" "-" "$rh_sha" "-"
+      emit "missing" "$it" "would be installed (missing from your machine; $AUTO_PHRASE)" "-" "$rh_sha" "-"
     fi
     rm -f "$RH.raw"
     plan_row "$LAST_STATE" "$it" "$own" "$modep" "$cons" "0" "-" "$RH"
@@ -827,20 +828,20 @@ while IFS='	' read -r it src typ pers ret rf checks own modep cons <&9; do
           if [ "$renpend" = "1" ]; then
             # content is current but the file still needs moving: that is an
             # available update, not in-sync
-            emit "kit-ahead" "$it" "would move live file from \`$rf\` to \`$it\` under opt-in (backup first; content already current)" "$ri_sha" "$rh_sha" "$lsha"
+            emit "kit-ahead" "$it" "would move live file from \`$rf\` to \`$it\` (a backup is kept first; content already current)" "$ri_sha" "$rh_sha" "$lsha"
           else
             emit "in-sync" "$it" "nothing" "$ri_sha" "$rh_sha" "$lsha"
           fi
         else
           # kit-ahead -- unless this exact upstream change was already declined
           state="kit-ahead"
-          would="would update under opt-in (backup first)$live_note"
+          would="would be updated ($AUTO_PHRASE; a backup is always kept)$live_note"
           dsha=$(awk -F'\t' -v k="$it" '$1==k{print $2; exit}' "$DECLINED_TSV")
           if [ -n "$dsha" ] && git -C "$CLONE" rev-parse --verify --quiet "$dsha^{commit}" >/dev/null; then
             RD="$SCRATCH/rd.$$.$RANDOM"
             if render_at "$dsha" "$src" "$pers" "$RD" && cmp -s "$RD" "$RH"; then
               state="declined-pending"
-              would="nothing (declined at $dsha; unchanged upstream since -- will re-prompt only if it changes again)"
+              would="nothing (you chose Keep for this change; you will be asked again only if the kit changes it again)"
             fi
             rm -f "$RD" "$RD.raw"
           fi
@@ -848,28 +849,28 @@ while IFS='	' read -r it src typ pers ret rf checks own modep cons <&9; do
         fi
       elif cmp -s "$live" "$RH"; then
         if [ "$renpend" = "1" ]; then
-          emit "kit-ahead" "$it" "would move live file from \`$rf\` to \`$it\` under opt-in (backup first; content already current)" "$ri_sha" "$rh_sha" "$lsha"
+          emit "kit-ahead" "$it" "would move live file from \`$rf\` to \`$it\` (a backup is kept first; content already current)" "$ri_sha" "$rh_sha" "$lsha"
         else
-          emit "already-current" "$it" "record only (anchor advances at run end)" "$ri_sha" "$rh_sha" "$lsha"
+          emit "already-current" "$it" "nothing to change (already matches the kit's latest version)" "$ri_sha" "$rh_sha" "$lsha"
         fi
       elif cmp -s "$RI" "$RH"; then
-        emit "live-ahead" "$it" "never touch; escalate; for the kit author: upstream-this signal" "$ri_sha" "$rh_sha" "$lsha"
+        emit "live-ahead" "$it" "kept your version (you improved this file; the kit has not changed it)" "$ri_sha" "$rh_sha" "$lsha"
       else
-        emit "diverged" "$it" "never touch; escalate (both sides moved; needs a human merge)" "$ri_sha" "$rh_sha" "$lsha"
+        emit "diverged" "$it" "kept your version (you changed it and the kit also improved it)" "$ri_sha" "$rh_sha" "$lsha"
       fi
     else
       # live present, source absent at installed (or entry new in HEAD manifest)
       if cmp -s "$live" "$RH"; then
-        emit "already-current" "$it" "record only" "-" "$rh_sha" "$lsha"
+        emit "already-current" "$it" "nothing to change (already matches the kit's latest version)" "-" "$rh_sha" "$lsha"
       else
-        emit "conflict" "$it" "escalate (upstream added a file that already exists live, with different content)" "-" "$rh_sha" "$lsha"
+        emit "conflict" "$it" "kept your version (the kit added a file you already had, with different content)" "-" "$rh_sha" "$lsha"
       fi
     fi
   else
     if [ "$have_ri" = "1" ]; then
-      emit "missing" "$it" "would reinstall under opt-in$live_note" "$ri_sha" "$rh_sha" "-"
+      emit "missing" "$it" "would be reinstalled (missing from your machine; $AUTO_PHRASE)$live_note" "$ri_sha" "$rh_sha" "-"
     else
-      emit "new" "$it" "would install under opt-in (new upstream)" "-" "$rh_sha" "-"
+      emit "new" "$it" "would be installed (new in the kit; $AUTO_PHRASE)" "-" "$rh_sha" "-"
     fi
   fi
   rm -f "$RI" "$RI.raw" "$RH.raw"
@@ -883,9 +884,9 @@ if [ "$REBASELINE" = "0" ]; then
     live="$HOME_DIR/$it"
     lsha="-"; [ -f "$live" ] && lsha=$(sha_of "$live")
     if [ -e "$live" ]; then
-      emit "removed-upstream" "$it" "would move live file to kit-retired/<date>/ and report (entry left the manifest with no retired tombstone)" "-" "-" "$lsha"
+      emit "removed-upstream" "$it" "would move live file to kit-retired/<date>/ (the kit no longer includes this file; a move, never a delete)" "-" "-" "$lsha"
     else
-      emit "removed-upstream" "$it" "report only (entry left the manifest with no retired tombstone; nothing live)" "-" "-" "-"
+      emit "removed-upstream" "$it" "report only (the kit no longer includes this file; nothing on your machine)" "-" "-" "-"
     fi
     plan_row "removed-upstream" "$it" "$own" "-" "$cons" "0" "-" "-"
     note "manifest rule: entry \`$it\` was deleted from the HEAD manifest without a \`retired\` tombstone -- surfaced loudly as removed-upstream."
@@ -901,6 +902,7 @@ APPLIED_MACH="$SCRATCH/applied.tsv"
 APPLIED_N=0
 UNAPPLIED_N=0
 ANCHOR_NOTE=""
+ANCHOR_ADVANCED=0
 
 applied() { # $1 action  $2 install_to  $3 detail  $4 backup-path-or--
   printf -- '- `%s` -- %s: %s\n' "$2" "$1" "$3" >> "$APPLIED_TABLE"
@@ -992,9 +994,9 @@ if [ "$APPLY" = "1" ]; then
             bk_record "$rec" "$pit"
             APPLIED_N=$((APPLIED_N+1))
             if [ "$rec" = "updated" ]; then
-              applied "updated" "$pit" "replaced with render(HEAD); previous version backed up$ren_note" "$bpath"
+              applied "updated" "$pit" "updated to the kit's latest version; the previous version was backed up$ren_note" "$bpath"
             else
-              applied "installed" "$pit" "installed render(HEAD); there was no previous file to back up$ren_note" "$bpath"
+              applied "installed" "$pit" "installed the kit's latest version; there was no previous file to back up$ren_note" "$bpath"
             fi
           else
             applied "failed" "$pit" "write failed; the backup (if any) is intact" "$bpath"
@@ -1078,6 +1080,7 @@ d["installed_commit"]=sys.argv[2]
 d["installed_at"]=sys.argv[3]
 open(sys.argv[4],"w").write(json.dumps(d,indent=2)+"\n")' "$CONFIG" "$HEAD_SHA" "$NOW_UTC" "$cfgside" \
              && mv "$cfgside" "$CONFIG"; then
+            ANCHOR_ADVANCED=1
             ANCHOR_NOTE="installed_commit advanced: ${INSTALLED_SHA:-<none>} -> $HEAD_SHA (written once, last, after verifying every entry against render(HEAD))."
             if [ -n "$relcfg" ]; then abpath="$BKDIR/$relcfg"; else abpath="-"; fi
             applied "anchor-advanced" "${relcfg:-$CONFIG}" "installed_commit -> $HEAD_SHA, installed_at -> $NOW_UTC" "$abpath"
@@ -1090,7 +1093,12 @@ open(sys.argv[4],"w").write(json.dumps(d,indent=2)+"\n")' "$CONFIG" "$HEAD_SHA" 
         fi
       fi
     else
-      ANCHOR_NOTE="installed_commit NOT advanced: $NOT_CLEAN entry(ies) still differ from render(HEAD). The anchor holds; the next run re-classifies whatever this run completed as already-current and finishes the job (self-healing)."
+      if [ "$NOT_CLEAN" -eq 1 ]; then
+        NC_PHRASE="1 file still differs"
+      else
+        NC_PHRASE="$NOT_CLEAN files still differ"
+      fi
+      ANCHOR_NOTE="installed_commit NOT advanced: $NC_PHRASE from the kit's latest version. The anchor holds; the next run re-classifies whatever this run completed as already-current and finishes the job (self-healing)."
     fi
   fi
 fi
@@ -1132,8 +1140,12 @@ fi
     if [ "$CFG_AUTO" = "true" ]; then
       echo "Auto-update is ON -- you opted in to having kit improvements applied"
       echo "automatically, and you can say \"turn off auto-updates\" anytime."
-      echo "Every changed file was backed up first; say \"undo the last kit update\""
-      echo "to put everything back exactly as it was."
+      # The undo promise is printed ONLY when this run actually backed
+      # something up -- a run that wrote nothing has nothing to undo.
+      if [ -n "$BKDIR" ] && [ -s "$BKMAN" ]; then
+        echo "Every changed file was backed up first; say \"undo the last kit update\""
+        echo "to put everything back exactly as it was."
+      fi
     else
       echo "Auto-update is OFF, so this run wrote nothing. The list below shows"
       echo "what is waiting, each with a Replace/Keep choice. Say \"turn on"
@@ -1149,7 +1161,13 @@ fi
   echo "- generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "- home: $HOME_DIR"
   echo "- upstream: $UPSTREAM"
-  echo "- installed_commit: ${CFG_INSTALLED:-<none>}"
+  if [ "$ANCHOR_ADVANCED" = "1" ]; then
+    old_short="<none>"
+    [ -n "$CFG_INSTALLED" ] && old_short=$(printf '%.7s' "$CFG_INSTALLED")
+    echo "- installed_commit: was $old_short -> now $(printf '%.7s' "$HEAD_SHA")"
+  else
+    echo "- installed_commit: ${CFG_INSTALLED:-<none>}"
+  fi
   echo "- head_commit: $HEAD_SHA"
   if [ "$APPLY" = "1" ]; then
     echo "- exit code: $RESULT (0 nothing left to do, 1 updates remained unapplied, 2 escalations present)"
@@ -1166,6 +1184,31 @@ fi
   echo "| install_to | state | action a real run WOULD take |"
   echo "|---|---|---|"
   cat "$TABLE"
+  if [ "$ANY_ESCALATION" = "1" ]; then
+    echo
+    echo "## Needs your attention"
+    echo
+    while IFS='	' read -r mstate mit msri msrh mslive; do
+      case "$mstate" in
+        diverged)
+          echo "- \`$mit\` -- You changed this file yourself and the kit also improved it. We kept your version -- nothing was overwritten. Ask your assistant to review the difference when convenient." ;;
+        live-ahead)
+          echo "- \`$mit\` -- You improved this file yourself and the kit has not changed it since. We kept your version -- nothing was overwritten. Your change may be worth sharing back to the kit." ;;
+        conflict)
+          echo "- \`$mit\` -- The kit added a new file that you already have your own version of. We kept your version -- nothing was overwritten. Ask your assistant to compare the two when convenient." ;;
+        removed-upstream)
+          if [ "$mslive" = "-" ]; then
+            echo "- \`$mit\` -- The kit no longer includes this file, and it is not on your machine either. Nothing to do -- this is just so you know."
+          else
+            echo "- \`$mit\` -- The kit no longer includes this file. Your copy is never deleted -- at most it is moved to the kit-retired folder, where it stays until you decide."
+          fi ;;
+        retired-present)
+          echo "- \`$mit\` -- The kit has retired this file. Your copy is never deleted -- at most it is moved to the kit-retired folder, where it stays until you decide." ;;
+        generated-failed)
+          echo "- \`$mit\` -- This file is yours and the kit never writes it, but it seems to be missing a section the kit expects. Nothing was changed -- ask your assistant to take a look when convenient." ;;
+      esac
+    done < "$MACH"
+  fi
   if [ "$APPLY" = "1" ]; then
     echo
     echo "## Applied"
@@ -1186,7 +1229,7 @@ fi
     cat "$NOTES"
   fi
   echo
-  echo "## Changelog (authored lines between installed_commit and HEAD)"
+  echo "## What changed"
   echo
   cat "$CHANGELOG_SECTION"
   echo
