@@ -15,3 +15,6 @@ This is the first changelog entry -- changes older than this predate the changel
 - The retired /agenda skill is fully tombstoned -- it announces itself as retired and will not run on its own.
 - Skill counts and file paths were corrected across the docs to match what actually ships.
 - The kit now ships an update checker (kit-scripts/kit-update-check.sh) that can check for kit updates and apply them, with automatic backups and an undo.
+- New projects now get a "Verify before assuming" section in their CLAUDE.md -- written notes drift, so check the current state before acting on them.
+- Update reports now read in plain language: a "What changed" summary, clear per-file actions like "kept your version", and a "Needs your attention" section whenever something needs a decision from you.
+- Follow-up items that are missing their sent/nudge dates now get flagged at session start, so a wait can't quietly go untracked.
