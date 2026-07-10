@@ -30,7 +30,7 @@ Write each missing file from its template in `~/.claude/project-template/`, fill
 
 When stamping `MEMORY.md` and `feedback.md`, fill the frontmatter `name:` and `description:` fields too -- they ship as `[project-slug]` / `[project]` placeholders -- not just the body, so the harness's recall metadata isn't left as a literal placeholder.
 
-For `CLAUDE.md`, stamp the CORE sections, then add the OPTIONAL sections from `~/.claude/project-template/CLAUDE-SECTIONS.md` that fit this project per Step 2's answers (e.g. Key People / Relationship Boundaries for a client project, Voice Rules for one with client-facing writing). Add only what fits.
+For `CLAUDE.md`, stamp the CORE sections, then add the OPTIONAL sections from `~/.claude/project-template/CLAUDE-SECTIONS.md` that fit this project per Step 2's answers (e.g. Key People / Relationship Boundaries for a client project, Voice Rules for one with client-facing writing). Add only what fits. When stamping `CLAUDE.md`, replace the `[MEMORY-SAFE-DIR]` placeholder in the session-start reading list with this project's ACTUAL memory safe-dir path -- the same path you derive to place `MEMORY.md`/`feedback.md` (per `_SPEC`'s slug rule), so the reading list points sessions at where those files really live.
 
 ## Step 3.5 -- Track new files
 If the project is a git repo, `git add` the newly created root files (`CLAUDE.md`, `AGENDA.md`) so they're tracked from the start. (Memory files live in the safe-dir outside the repo, so git doesn't apply to them.)
