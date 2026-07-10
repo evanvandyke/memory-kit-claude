@@ -10,6 +10,7 @@ Read top to bottom = hottest to coldest. When Active finishes, the top *work* sl
 > - **Completion is deletion.** Finished items leave. No "done" section.
 > - **Demotion, not deletion.** When a slot is needed, demote the lowest item back to FOR SURE. Never delete an unfinished item to make room.
 > - **Default is hold.** An unfinished Active stays Active unless there's a real signal to move it.
+> - **Outbound asks → FOLLOW-UP.** When a communication carries asks (approvals, access, reviews), each ask enters FOLLOW-UP with a nudge date on send. Stay open until confirmed by the recipient. Every outbound touch resets the nudge date.
 
 ---
 
@@ -19,14 +20,14 @@ Read top to bottom = hottest to coldest. When Active finishes, the top *work* sl
 -
 
 ## UP NEXT  *(limit 3 total -- FOLLOW-UP is one of the 3 when blocked, not extra)*
-*The next few, ordered. 2 work slots + 1 FOLLOW-UP when something's blocked; 3 work slots when nothing is. The bottleneck is deliberate -- it keeps blocked work in view.*
+*The next few, ordered. When FOLLOW-UP has items, it occupies one of the three slots (2 numbered work slots + FOLLOW-UP). When nothing's blocked, 3 numbered work slots. The bottleneck is deliberate -- it keeps blocked work in view.*
 
 1.
 2.
 3.
 
-### FOLLOW-UP  *(third-party asks only -- pinned, never rises)*
-*Blocked on someone else. Each item carries a nudge date (default 3 business days from last sent contact). Format: who · last **sent** ask (date + ref) · nudge date. Gated work nests under its blocker as `gated:`. Same-communication items nest under one parent entry.*
+### FOLLOW-UP  *(third-party asks + calendar gates -- pinned, never rises)*
+*Blocked on someone else or gated on a date. Each item carries a nudge date (default 3 business days from last sent contact). Format: who · last **sent** ask (date + ref) · nudge date. Calendar gates: calendar · gate: [date]. Gated work nests under its blocker as `gated:`. Same-communication items nest under one parent entry. When outbound emails carry asks (approvals, access, reviews), each ask enters here with a nudge date on send. Items stay open until the recipient confirms -- implementation alone doesn't close them. Every outbound touch resets the nudge date.*
 
 > **Example:**
 > - **Taylor -- Email 20 (sent Jun 22, nudge Jun 25)**

@@ -11,8 +11,21 @@ Close out the session. Work through each step end to end; skip what doesn't appl
 ## Step 0: Session number + repair check
 **Canonical rule: N = the integer in the highest-numbered note filename in `Docs_Compressions/` (zero-padded, no suffixes); an empty/absent folder = no prior sessions.** `/wrap` is closing the *current* session and about to write its note, so this session's number is that highest N **plus one** (empty/absent folder -> session 1). **If that number is divisible by 5, invoke `/project-repair` -- this is mandatory, not one of the steps you may skip.** Repair always applies on a 5th session regardless of session length, context pressure, or perceived project health. Launch its two independent auditors in the background so they work through the steps below while you finish wrapping.
 
-## Step 1: Prune the agenda
-In `AGENDA.md`: delete completed items (completion = deletion), then advance the tiers: when Active opens, the top **work** slot of UP NEXT climbs into Active (FOLLOW-UP never rises); the freed slot draws from FOR SURE -- propose the pick, never choose silently. Preserve the tier headers, annotations, and description lines -- they're structural. Leave the agenda correct for next session.
+## Step 1: Validate, prune, and advance the agenda
+In `AGENDA.md`:
+
+**Validate first:**
+- Is ACTIVE one item? If it contains multiple independent workstreams (joined by "and" or requiring context-switching), split: keep the primary, route extras to UP NEXT or FOR SURE.
+- Does any FOLLOW-UP item need its nudge date updated? Every outbound touch resets the nudge date to 3 business days from the send. Items awaiting recipient confirmation stay open until confirmed -- implementation alone doesn't close them.
+- Is the ACTIVE item sized right? If it can't finish in ~50k tokens, it's a project -- flag for slicing (`Project: [parent] -- [the slice]`).
+
+**Then prune and advance:**
+- Delete completed items (completion = deletion).
+- When ACTIVE opens, the top **work** slot of UP NEXT climbs in (FOLLOW-UP never rises). The freed slot draws from FOR SURE -- propose the pick, never choose silently.
+- **Demotion** only on a real signal ([USER_NAME] redirects, or a review). Default is hold. A *bump* (still next, lost to urgency) drops to **top of UP NEXT work slots**, keeping seniority. A *park* (switching tracks) drops to **FOR SURE**. Never delete an unfinished item.
+- When UP NEXT empties: scan IDEAS for anything that's risen to FOR SURE, then propose picks from FOR SURE to refill.
+
+Preserve the tier headers, annotations, and description lines -- they're structural. Leave the agenda correct for next session.
 
 ## Step 2: CLAUDE.md stable facts (only if changed)
 Update `CLAUDE.md` only if a durable orientation fact changed this session (the stack, a convention, a canonical-doc pointer). Status and current state are the agenda's job, not this. Otherwise skip.
