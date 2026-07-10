@@ -1,0 +1,128 @@
+{
+  "kit": "memory-kit-claude",
+  "manifest_schema": 1,
+  "out_of_scope": [
+    "skills/design-intake/",
+    "skills/notifications-on/",
+    "skills/notifications-off/",
+    "skills/orient/",
+    "skills/quality/",
+    "CLAUDE.md",
+    "kit-config/"
+  ],
+  "files": [
+    {
+      "source": "global/skills/start/SKILL.md",
+      "install_to": "skills/start/SKILL.md",
+      "type": "copied",
+      "personalize": true,
+      "owner": "kit"
+    },
+    {
+      "source": "global/skills/wrap/SKILL.md",
+      "install_to": "skills/wrap/SKILL.md",
+      "type": "copied",
+      "personalize": true,
+      "owner": "kit"
+    },
+    {
+      "source": "global/skills/compress/SKILL.md",
+      "install_to": "skills/compress/SKILL.md",
+      "type": "copied",
+      "personalize": true,
+      "owner": "kit"
+    },
+    {
+      "source": "global/skills/project-setup/SKILL.md",
+      "install_to": "skills/project-setup/SKILL.md",
+      "type": "copied",
+      "personalize": true,
+      "owner": "kit"
+    },
+    {
+      "source": "global/skills/project-repair/SKILL.md",
+      "install_to": "skills/project-repair/SKILL.md",
+      "type": "copied",
+      "personalize": true,
+      "owner": "kit"
+    },
+    {
+      "source": "global/skills/agenda/SKILL.md",
+      "install_to": "skills/agenda/SKILL.md",
+      "type": "copied",
+      "personalize": true,
+      "owner": "kit",
+      "retired": { "date": "2026-06-29", "replaced_by": "start + wrap + _SPEC.md" }
+    },
+    {
+      "source": "global/project-template/CLAUDE.md",
+      "install_to": "project-template/CLAUDE.md",
+      "type": "copied",
+      "personalize": false,
+      "owner": "kit"
+    },
+    {
+      "source": "global/project-template/AGENDA.md",
+      "install_to": "project-template/AGENDA.md",
+      "type": "copied",
+      "personalize": false,
+      "owner": "kit"
+    },
+    {
+      "source": "global/project-template/MEMORY.md",
+      "install_to": "project-template/MEMORY.md",
+      "type": "copied",
+      "personalize": true,
+      "owner": "kit"
+    },
+    {
+      "source": "global/project-template/feedback.md",
+      "install_to": "project-template/feedback.md",
+      "type": "copied",
+      "personalize": true,
+      "owner": "kit"
+    },
+    {
+      "source": "global/project-template/_SPEC.md",
+      "install_to": "project-template/_SPEC.md",
+      "type": "copied",
+      "personalize": true,
+      "owner": "kit"
+    },
+    {
+      "source": "global/project-template/CLAUDE-SECTIONS.md",
+      "install_to": "project-template/CLAUDE-SECTIONS.md",
+      "type": "copied",
+      "personalize": false,
+      "owner": "kit"
+    },
+    {
+      "source": "global/Compression-Guide.md",
+      "install_to": "Compression-Guide.md",
+      "type": "copied",
+      "personalize": true,
+      "owner": "kit"
+    },
+    {
+      "source": "scripts/kit-update-check.sh",
+      "install_to": "kit-scripts/kit-update-check.sh",
+      "type": "copied",
+      "personalize": false,
+      "owner": "kit",
+      "mode": "755",
+      "consent": "per-change"
+    },
+    {
+      "source": null,
+      "install_to": "CLAUDE.md",
+      "type": "generated",
+      "owner": "user",
+      "checks": [
+        "section: Before Every Response",
+        "section: Core Partnership Behaviors",
+        "section: Core Safety",
+        "section: Navigating System Reminders"
+      ]
+    }
+  ]
+}
