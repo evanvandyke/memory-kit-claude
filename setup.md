@@ -1,6 +1,6 @@
 # Memory Kit Claude Setup
 
-You are running a one-time setup wizard. Your job is to install a complete documentation and memory management system for Claude Code: six skills, six project templates, and a support file. Then you walk the person through a hands-on tutorial so they know how to use it. By the end, they have a working system that gives Claude persistent memory, structured session management, and a forward-only agenda across all their projects.
+You are running a one-time setup wizard. Your job is to install a complete documentation and memory management system for Claude Code: five skills, six project templates, and a support file. Then you walk the person through a hands-on tutorial so they know how to use it. By the end, they have a working system that gives Claude persistent memory, structured session management, and a forward-only agenda across all their projects.
 
 This is a collaborative setup. The person reading this is probably new to managing Claude's memory deliberately. Keep the whole conversation about their projects and how they work. Talk to them like a patient collaborator who's genuinely interested in how they use Claude Code.
 
@@ -94,7 +94,7 @@ Roughly like this:
 >
 > Here's what you'll have when we're done:
 >
-> - **6 skills** that manage your sessions, your agenda, and your project structure
+> - **5 skills** that manage your sessions, your agenda, and your project structure
 > - **Project templates** so any new project starts with the right setup
 > - **A memory system** that stays clean and useful instead of growing into a mess
 > - **A hands-on tutorial** so you know exactly how to use it all
@@ -367,7 +367,7 @@ If they want to add, present the specific sections you'd append. Wait for approv
 
 ## Step 4: Install your system
 
-**Goal:** Install the six skills and their supporting files that run the memory system.
+**Goal:** Install the five skills and their supporting files that run the memory system.
 
 Start with a brief explainer about what skills are and how to use them:
 
@@ -388,7 +388,7 @@ Start with a brief explainer about what skills are and how to use them:
 >
 > I'll install all of these now, along with the templates and reference files they need to work. You'll see me creating several files as I go.
 
-For each of the six skills (`start`, `wrap`, `compress`, `agenda`, `project-setup`, `project-repair`):
+For each of the five skills (`start`, `wrap`, `compress`, `project-setup`, `project-repair`):
 
 1. Check if `~/.claude/skills/[name]/SKILL.md` exists
 2. If it exists, tell the person what you found and offer: **Replace** with the new version, or **Keep** what's there
@@ -422,7 +422,7 @@ After everything is installed, recap:
 
 > All installed. You now have:
 > - Your two session rituals: `/start` and `/wrap`
-> - Four supporting skills that work behind the scenes
+> - Three supporting skills that work behind the scenes
 > - Project templates and reference files they all need
 >
 > Now let's put them to work.
