@@ -406,7 +406,7 @@ For each of the six templates (`_SPEC.md`, `CLAUDE.md`, `CLAUDE-SECTIONS.md`, `A
 4. Replace `[USER_NAME]` with their name, `[USER_NAME]'s` for possessive forms
 5. Write to `~/.claude/project-template/[name]`
 
-The templates keep their project-level placeholders: `[Project]`, `[project]`, `[project-slug]`, and `[MEMORY-SAFE-DIR]`. Those get filled per-project by `/project-setup` later, not now. In this step, fill ONLY `[USER_NAME]`. Leave the project-level placeholders exactly as they are, and do not "fix" or guess at them.
+The templates keep their project-level placeholders: `[Project]`, `[project]`, and `[project-slug]`. Those get filled per-project by `/project-setup` later, not now. In this step, fill ONLY `[USER_NAME]`. Leave the project-level placeholders exactly as they are, and do not "fix" or guess at them.
 
 Create `~/.claude/project-template/` if it doesn't exist.
 
@@ -498,7 +498,6 @@ Wait for their approval before proceeding.
 - `[Project]` with the project directory name, naturally capitalized
 - `[project]` with the project directory name, lowercase
 - `[project-slug]` with the project directory name, kebab-case
-- `[MEMORY-SAFE-DIR]` with the project's memory safe-dir path. Derive the slug per `_SPEC.md`'s rule (every non-alphanumeric character becomes a dash, one-for-one). When unsure, run `ls ~/.claude/projects/` and match the directory that corresponds to this project's path.
 
 Add STRATEGY.md and CONTEXT.md to the "Canonical docs" section, but only for files that actually exist in the project:
 
