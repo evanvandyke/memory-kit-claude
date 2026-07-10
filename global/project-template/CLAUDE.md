@@ -11,6 +11,12 @@ Prove you read them by summarizing their current state in your first response. I
 
 **At session end:** run `/wrap`.
 
+## Verify before assuming
+Written descriptions drift. Compression notes, agenda items, memory entries,
+and docs reflect the state when they were written, not necessarily now. Before
+acting on any written claim, check the current state. When you can't verify,
+say so: "Based on [source], I'm assuming [X] -- this may have changed."
+
 ## Canonical docs (this project's source of truth)
 The handful of documents that are authoritative for this project -- the ones a fresh session reads to get up to speed, and where durable facts live instead of memory. Architecture, decisions, and specs live in these docs (and the code), not in this file.
 

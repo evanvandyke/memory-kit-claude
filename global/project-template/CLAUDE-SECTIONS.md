@@ -3,7 +3,7 @@
 The canonical menu of sections a project `CLAUDE.md` may have. Repair matches sections by **role/purpose, not exact header wording** -- the header text can vary; the role is what must conform.
 
 ## CORE -- every project
-- **Trust the Source of Truth** -- holds: code wins over docs/memory when they disagree (verbatim boilerplate). include: always. ongoing: never changes.
+- **Verify before assuming** -- holds: written descriptions drift; check the current state before acting on any written claim, and say so when you can't verify (verbatim boilerplate). include: always. ongoing: never changes.
 - **At Session Start** -- holds: the reading list (`AGENDA` → `MEMORY` + `feedback` → canonical docs) + prove-you-read. include: always. ongoing: edit only when the canonical-docs set changes.
 - **Canonical docs** -- holds: the project's authoritative docs + code; where facts live instead of memory. include: always. ongoing: add a doc when a new source-of-truth doc is created; remove one when retired.
 - **Project overview** -- holds: 1-3 sentences (what it is, stack, goal); stable identity only. include: always. ongoing: edit only on a real identity/stack change (rare).
