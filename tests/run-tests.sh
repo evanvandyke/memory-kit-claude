@@ -418,6 +418,383 @@ run_check "$H" "$REPO" --report "$WORK/no-such-dir/report.md"
 assert_eq "unwritable-report: exit code 3"           "3" "$RC"
 assert_grep "unwritable-report: error names the path" "no-such-dir/report.md" "$OUT"
 
+# ###########################################################################
+# APPLY MODE + UNDO
+# ###########################################################################
+
+# applied_of <report> <install_to> -> action from the APPLIED machine block
+applied_of() {
+  awk -F'\t' -v p="$2" '
+    /APPLIED-END/   {insec=0}
+    insec && $2==p  {print $1; exit}
+    /APPLIED-BEGIN/ {insec=1}
+  ' "$1" 2>/dev/null
+}
+
+cfg_commit() {
+  python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("installed_commit",""))' "$1" 2>/dev/null
+}
+
+# checksum sweep of a home, excluding backup dirs and the transient lock
+sweep() {
+  (cd "$1" && find . -type f ! -path './kit-backups/*' ! -path './.kit-update.lock/*' -exec shasum -a 256 {} + 2>/dev/null | LC_ALL=C sort)
+}
+
+perm_of() { stat -f %Lp "$1" 2>/dev/null || stat -c %a "$1" 2>/dev/null; }
+
+newest_backup() { ls -1 "$1/kit-backups" 2>/dev/null | LC_ALL=C sort | tail -1; }
+
+write_config_auto() { # home installed_commit update_source user_name auto(true|false)
+  mkdir -p "$1/kit-config"
+  python3 -c 'import json,sys
+cfg={"kit":"memory-kit-claude","installed_commit":sys.argv[2],
+     "installed_at":"2026-07-09T00:00:00Z","update_source":sys.argv[3],
+     "user_name":sys.argv[4],"auto_update":(sys.argv[5]=="true"),"declined":{}}
+open(sys.argv[1],"w").write(json.dumps(cfg,indent=2))' \
+    "$1/kit-config/memory-kit-claude.json" "$2" "$3" "$4" "$5"
+}
+
+# ----------------------------------------------------------- apply fixture repo
+# A1: baseline manifest. A2 (HEAD): a + user + exec change, zr renamed,
+# eps (plain) and locked (mode 600) added, old stays retired.
+RA="$WORK/upstream-apply"
+mkdir -p "$RA/files"
+git -C "$WORK" init -q upstream-apply
+
+printf '# A\nHello [USER_NAME], apply v1.\n' > "$RA/files/a.md"
+printf '# B\nStable b.\n'                    > "$RA/files/b.md"
+printf '# User\nUser-owned notes v1.\n'      > "$RA/files/user.md"
+printf '#!/bin/sh\necho v1\n'                > "$RA/files/exec.sh"
+printf '# Zr\nRename me too.\n'              > "$RA/files/zr.md"
+printf '# Old\nRetired.\n'                   > "$RA/files/old.md"
+printf '# Locked\nQuiet file.\n'             > "$RA/files/locked.md"
+printf '# Eps\nNew at A2.\n'                 > "$RA/files/eps.md"
+cat > "$RA/install-manifest.json" <<'EOF'
+{
+  "kit": "memory-kit-claude",
+  "manifest_schema": 1,
+  "files": [
+    { "source": "files/a.md",    "install_to": "skills/a/SKILL.md", "type": "copied", "personalize": true,  "owner": "kit" },
+    { "source": "files/b.md",    "install_to": "skills/b/SKILL.md", "type": "copied", "personalize": false, "owner": "kit" },
+    { "source": "files/user.md", "install_to": "notes/user.md",     "type": "copied", "personalize": false, "owner": "user" },
+    { "source": "files/exec.sh", "install_to": "kit-scripts/exec.sh", "type": "copied", "personalize": false, "owner": "kit",
+      "mode": "755", "consent": "per-change" },
+    { "source": "files/zr.md",   "install_to": "notes/zr-old.md",   "type": "copied", "personalize": false, "owner": "kit" },
+    { "source": "files/old.md",  "install_to": "skills/old/SKILL.md", "type": "copied", "personalize": false, "owner": "kit",
+      "retired": { "date": "2026-06-29", "replaced_by": "nothing" } },
+    { "source": null, "install_to": "CLAUDE.md", "type": "generated", "owner": "user",
+      "checks": ["section: Alpha Rules"] }
+  ]
+}
+EOF
+printf -- '- 2026-07-01 -- apply kit initial\n' > "$RA/CHANGELOG.md"
+git -C "$RA" add -A && gitc "$RA" -m "A1: apply-fixture baseline"
+A1=$(git -C "$RA" rev-parse HEAD)
+
+printf '# A\nHello [USER_NAME], apply v2.\n' > "$RA/files/a.md"
+printf '# User\nUser-owned notes v2.\n'      > "$RA/files/user.md"
+printf '#!/bin/sh\necho v2\n'                > "$RA/files/exec.sh"
+cat > "$RA/install-manifest.json" <<'EOF'
+{
+  "kit": "memory-kit-claude",
+  "manifest_schema": 1,
+  "files": [
+    { "source": "files/a.md",    "install_to": "skills/a/SKILL.md", "type": "copied", "personalize": true,  "owner": "kit" },
+    { "source": "files/b.md",    "install_to": "skills/b/SKILL.md", "type": "copied", "personalize": false, "owner": "kit" },
+    { "source": "files/user.md", "install_to": "notes/user.md",     "type": "copied", "personalize": false, "owner": "user" },
+    { "source": "files/exec.sh", "install_to": "kit-scripts/exec.sh", "type": "copied", "personalize": false, "owner": "kit",
+      "mode": "755", "consent": "per-change" },
+    { "source": "files/zr.md",   "install_to": "notes/zr.md",       "type": "copied", "personalize": false, "owner": "kit",
+      "renamed_from": "notes/zr-old.md" },
+    { "source": "files/old.md",  "install_to": "skills/old/SKILL.md", "type": "copied", "personalize": false, "owner": "kit",
+      "retired": { "date": "2026-06-29", "replaced_by": "nothing" } },
+    { "source": "files/eps.md",  "install_to": "skills/eps/SKILL.md", "type": "copied", "personalize": false, "owner": "kit" },
+    { "source": "files/locked.md", "install_to": "notes/locked.md", "type": "copied", "personalize": false, "owner": "kit",
+      "mode": "600" },
+    { "source": null, "install_to": "CLAUDE.md", "type": "generated", "owner": "user",
+      "checks": ["section: Alpha Rules"] }
+  ]
+}
+EOF
+printf -- '- 2026-07-09 -- apply kit v2\n' >> "$RA/CHANGELOG.md"
+git -C "$RA" add -A && gitc "$RA" -m "A2: a/user/exec v2, zr renamed, eps+locked new"
+A2=$(git -C "$RA" rev-parse HEAD)
+
+# home rendered exactly at A1, anchored at A1
+apply_home() { # dir [auto=true]
+  local H="$1"
+  mkdir -p "$H/skills/a" "$H/skills/b" "$H/notes" "$H/kit-scripts"
+  git -C "$RA" show "$A1:files/a.md" > "$WORK/tmp.src" && render_py "$WORK/tmp.src" "Evan" > "$H/skills/a/SKILL.md"
+  git -C "$RA" show "$A1:files/b.md"    > "$H/skills/b/SKILL.md"
+  git -C "$RA" show "$A1:files/user.md" > "$H/notes/user.md"
+  git -C "$RA" show "$A1:files/exec.sh" > "$H/kit-scripts/exec.sh"
+  chmod 755 "$H/kit-scripts/exec.sh"
+  git -C "$RA" show "$A1:files/zr.md"   > "$H/notes/zr-old.md"
+  good_claude_md "$H"
+  write_config_auto "$H" "$A1" "$RA" "Evan" "${2:-true}"
+}
+
+# like apply_home, but user.md and exec.sh already hand-updated to render(A2):
+# every remaining difference is auto-appliable, so a clean apply run results
+apply_home_clean() {
+  apply_home "$1"
+  git -C "$RA" show "$A2:files/user.md" > "$1/notes/user.md"
+  git -C "$RA" show "$A2:files/exec.sh" > "$1/kit-scripts/exec.sh"
+  chmod 755 "$1/kit-scripts/exec.sh"
+}
+
+RETIRE_TODAY=$(date -u +%Y-%m-%d)
+
+# =========================== A1. dry-run default still writes nothing (sweep)
+H="$WORK/h-apply-dryrun"; mkdir -p "$H"; apply_home "$H"
+sweep "$H" > "$WORK/sweep-before.txt"
+run_check "$H" "$RA"
+sweep "$H" > "$WORK/sweep-after.txt"
+if diff -q "$WORK/sweep-before.txt" "$WORK/sweep-after.txt" >/dev/null; then
+  ok "apply-guard: default dry run changes no byte of the home"
+else
+  bad "apply-guard: default dry run changes no byte of the home" "checksum sweep differs"
+fi
+if [ -d "$H/kit-backups" ]; then
+  bad "apply-guard: dry run creates no kit-backups dir" "kit-backups exists"
+else
+  ok "apply-guard: dry run creates no kit-backups dir"
+fi
+
+# ================================================== A2. the mixed apply run
+H="$WORK/h-apply-mixed"; mkdir -p "$H"; apply_home "$H"
+run_check "$H" "$RA" --apply
+assert_eq "apply-mixed: exit 1 (per-change + user-owned remained unapplied)" "1" "$RC"
+
+git -C "$RA" show "$A2:files/a.md" > "$WORK/tmp.src" && render_py "$WORK/tmp.src" "Evan" > "$WORK/want-a.md"
+if cmp -s "$H/skills/a/SKILL.md" "$WORK/want-a.md"; then
+  ok "apply-mixed: kit-ahead a applied, content == render(HEAD)"
+else
+  bad "apply-mixed: kit-ahead a applied, content == render(HEAD)" "content differs"
+fi
+assert_eq "apply-mixed: applied action recorded for a" "updated" "$(applied_of "$REPORT" skills/a/SKILL.md)"
+
+git -C "$RA" show "$A2:files/eps.md" > "$WORK/want-eps.md"
+if cmp -s "$H/skills/eps/SKILL.md" "$WORK/want-eps.md"; then
+  ok "apply-mixed: new eps installed with correct content"
+else
+  bad "apply-mixed: new eps installed with correct content" "missing or differs"
+fi
+assert_eq "apply-mixed: applied action recorded for eps" "installed" "$(applied_of "$REPORT" skills/eps/SKILL.md)"
+
+assert_eq "apply-mixed: mode bit applied to locked (600)" "600" "$(perm_of "$H/notes/locked.md")"
+
+if [ -f "$H/notes/zr.md" ] && [ ! -e "$H/notes/zr-old.md" ]; then
+  ok "apply-mixed: rename applied (zr at new path, old path cleared)"
+else
+  bad "apply-mixed: rename applied (zr at new path, old path cleared)" "paths wrong"
+fi
+
+BK=$(newest_backup "$H")
+if [ -n "$BK" ] && [ -f "$H/kit-backups/$BK/RESTORE.md" ]; then
+  ok "apply-mixed: backup dir created with RESTORE.md"
+else
+  bad "apply-mixed: backup dir created with RESTORE.md" "missing"
+fi
+git -C "$RA" show "$A1:files/a.md" > "$WORK/tmp.src" && render_py "$WORK/tmp.src" "Evan" > "$WORK/orig-a.md"
+if cmp -s "$H/kit-backups/$BK/skills/a/SKILL.md" "$WORK/orig-a.md"; then
+  ok "apply-mixed: backup of a holds the pre-write bytes"
+else
+  bad "apply-mixed: backup of a holds the pre-write bytes" "backup wrong or missing"
+fi
+git -C "$RA" show "$A1:files/zr.md" > "$WORK/orig-zr.md"
+if cmp -s "$H/kit-backups/$BK/notes/zr-old.md" "$WORK/orig-zr.md"; then
+  ok "apply-mixed: renamed file's old-path bytes preserved in backup"
+else
+  bad "apply-mixed: renamed file's old-path bytes preserved in backup" "backup wrong or missing"
+fi
+
+git -C "$RA" show "$A1:files/user.md" > "$WORK/orig-user.md"
+if cmp -s "$H/notes/user.md" "$WORK/orig-user.md"; then
+  ok "apply-mixed: user-owned entry untouched"
+else
+  bad "apply-mixed: user-owned entry untouched" "user.md was modified"
+fi
+assert_eq "apply-mixed: user-owned recorded as skipped" "skipped-user-owned" "$(applied_of "$REPORT" notes/user.md)"
+
+git -C "$RA" show "$A1:files/exec.sh" > "$WORK/orig-exec.sh"
+if cmp -s "$H/kit-scripts/exec.sh" "$WORK/orig-exec.sh"; then
+  ok "apply-mixed: per-change consent entry untouched"
+else
+  bad "apply-mixed: per-change consent entry untouched" "exec.sh was modified"
+fi
+assert_eq "apply-mixed: per-change recorded as needs-approval" "needs-approval" "$(applied_of "$REPORT" kit-scripts/exec.sh)"
+assert_grep "apply-mixed: report says individual approval needed" "individual approval" "$REPORT"
+
+assert_eq "apply-mixed: anchor held on a mixed run" "$A1" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+assert_grep "apply-mixed: report explains the held anchor" "NOT advanced" "$REPORT"
+assert_grep "apply-mixed: report has an Applied section" "## Applied" "$REPORT"
+assert_grep "apply-mixed: summary re-states the opt-in and undo" "undo the last kit update" "$REPORT"
+
+# =============================================== A3. reinstalls a missing file
+H="$WORK/h-apply-missing"; mkdir -p "$H"; apply_home_clean "$H"
+rm "$H/skills/b/SKILL.md"
+run_check "$H" "$RA" --apply
+git -C "$RA" show "$A2:files/b.md" > "$WORK/want-b.md"
+if cmp -s "$H/skills/b/SKILL.md" "$WORK/want-b.md"; then
+  ok "apply-missing: b reinstalled with correct content"
+else
+  bad "apply-missing: b reinstalled with correct content" "missing or differs"
+fi
+assert_eq "apply-missing: recorded as installed (no prior file)" "installed" "$(applied_of "$REPORT" skills/b/SKILL.md)"
+
+# =================================== A4. live-ahead / diverged never written
+H="$WORK/h-apply-protected"; mkdir -p "$H"; apply_home "$H"
+printf '\nlocal-only improvement\n' >> "$H/skills/b/SKILL.md"
+printf '# A\nlocally rewritten a\n' > "$H/skills/a/SKILL.md"
+sha_b_before=$(shasum -a 256 "$H/skills/b/SKILL.md" | awk '{print $1}')
+sha_a_before=$(shasum -a 256 "$H/skills/a/SKILL.md" | awk '{print $1}')
+run_check "$H" "$RA" --apply
+assert_eq "apply-protected: exit 2 (escalations)" "2" "$RC"
+assert_eq "apply-protected: b classified live-ahead" "live-ahead" "$(state_of "$REPORT" skills/b/SKILL.md)"
+assert_eq "apply-protected: a classified diverged"   "diverged"   "$(state_of "$REPORT" skills/a/SKILL.md)"
+assert_eq "apply-protected: live-ahead b byte-untouched" "$sha_b_before" "$(shasum -a 256 "$H/skills/b/SKILL.md" | awk '{print $1}')"
+assert_eq "apply-protected: diverged a byte-untouched"   "$sha_a_before" "$(shasum -a 256 "$H/skills/a/SKILL.md" | awk '{print $1}')"
+assert_eq "apply-protected: anchor held" "$A1" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+
+# =============================== A5. retired entry moved to kit-retired/<date>
+H="$WORK/h-apply-retired"; mkdir -p "$H"; apply_home "$H"
+mkdir -p "$H/skills/old"
+printf '# Old\nRetired.\n' > "$H/skills/old/SKILL.md"
+run_check "$H" "$RA" --apply
+assert_eq "apply-retired: exit 2 (retirement is surfaced loudly)" "2" "$RC"
+if [ ! -e "$H/skills/old/SKILL.md" ]; then
+  ok "apply-retired: live file gone from its old home"
+else
+  bad "apply-retired: live file gone from its old home" "still present"
+fi
+if printf '# Old\nRetired.\n' | cmp -s - "$H/kit-retired/$RETIRE_TODAY/skills/old/SKILL.md"; then
+  ok "apply-retired: moved (not deleted) into kit-retired/<date>/ intact"
+else
+  bad "apply-retired: moved (not deleted) into kit-retired/<date>/ intact" "not found or differs"
+fi
+assert_eq "apply-retired: recorded as retired" "retired" "$(applied_of "$REPORT" skills/old/SKILL.md)"
+
+# ====================== A6. removed-upstream (old fixture repo) also moves
+H="$WORK/h-apply-removed"; mkdir -p "$H"; home_baseline "$H"
+run_check "$H" "$REPO" --apply
+assert_eq "apply-removed: exit 2 (removed-upstream stays an escalation)" "2" "$RC"
+if [ ! -e "$H/skills/delta/SKILL.md" ] && [ -f "$H/kit-retired/$RETIRE_TODAY/skills/delta/SKILL.md" ]; then
+  ok "apply-removed: removed-upstream delta moved to kit-retired"
+else
+  bad "apply-removed: removed-upstream delta moved to kit-retired" "not moved"
+fi
+assert_eq "apply-removed: anchor advances once everything is resolved" "$C2" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+
+# ======================================= A7. auto_update false applies nothing
+H="$WORK/h-apply-optout"; mkdir -p "$H"; apply_home "$H" "false"
+sweep "$H" > "$WORK/sweep-optout-before.txt"
+run_check "$H" "$RA" --apply
+sweep "$H" > "$WORK/sweep-optout-after.txt"
+assert_eq "apply-optout: exit 1 (updates remained unapplied)" "1" "$RC"
+if diff -q "$WORK/sweep-optout-before.txt" "$WORK/sweep-optout-after.txt" >/dev/null; then
+  ok "apply-optout: not a single byte of the home changed"
+else
+  bad "apply-optout: not a single byte of the home changed" "checksum sweep differs"
+fi
+if [ -d "$H/kit-backups" ]; then
+  bad "apply-optout: no backup dir created" "kit-backups exists"
+else
+  ok "apply-optout: no backup dir created"
+fi
+assert_grep "apply-optout: Replace vocabulary offered" "Replace" "$REPORT"
+assert_grep "apply-optout: Keep vocabulary offered"    "Keep"    "$REPORT"
+assert_eq "apply-optout: a recorded as would-apply" "would-apply" "$(applied_of "$REPORT" skills/a/SKILL.md)"
+assert_eq "apply-optout: anchor untouched" "$A1" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+
+# ============================= A8. clean run advances the anchor (written last)
+H="$WORK/h-apply-clean"; mkdir -p "$H"; apply_home_clean "$H"
+run_check "$H" "$RA" --apply
+assert_eq "apply-clean: exit 0 (nothing left to do)" "0" "$RC"
+assert_eq "apply-clean: anchor advanced to HEAD" "$A2" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+assert_grep "apply-clean: report says the anchor advanced" "installed_commit advanced" "$REPORT"
+BK=$(newest_backup "$H")
+if grep -q "updated	kit-config/memory-kit-claude.json" "$H/kit-backups/$BK/.kit-backup-manifest.tsv" 2>/dev/null; then
+  ok "apply-clean: previous config backed up before the anchor write"
+else
+  bad "apply-clean: previous config backed up before the anchor write" "no config backup recorded"
+fi
+
+# =========== A9. anchor written LAST: kill between file writes and anchor
+H="$WORK/h-apply-torn"; mkdir -p "$H"; apply_home_clean "$H"
+TESTN=$((TESTN+1)); REPORT="$WORK/report-$TESTN.md"; OUT="$WORK/out-$TESTN.txt"
+KUC_TEST_KILL_BEFORE_ANCHOR=1 bash "$SCRIPT" --home "$H" --upstream "$RA" --report "$REPORT" --apply > "$OUT" 2>&1
+RC=$?
+assert_eq "apply-torn: run killed before the anchor write (SIGKILL)" "137" "$RC"
+if cmp -s "$H/skills/a/SKILL.md" "$WORK/want-a.md"; then
+  ok "apply-torn: file writes had already landed"
+else
+  bad "apply-torn: file writes had already landed" "a not updated"
+fi
+assert_eq "apply-torn: config unchanged -- anchor still at A1" "$A1" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+rm -rf "$H/.kit-update.lock"   # SIGKILL skips the trap; clear the dead run's lock
+run_check "$H" "$RA" --apply
+assert_eq "apply-torn: healing run exits 0" "0" "$RC"
+assert_eq "apply-torn: healing run sees a as already-current" "already-current" "$(state_of "$REPORT" skills/a/SKILL.md)"
+assert_eq "apply-torn: healing run advances the anchor" "$A2" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+
+# ============================================= A10. undo round-trip, twice over
+H="$WORK/h-apply-undo"; mkdir -p "$H"; apply_home_clean "$H"
+sweep "$H" > "$WORK/sweep-orig.txt"
+run_check "$H" "$RA" --apply
+assert_eq "undo-roundtrip: apply run exits 0" "0" "$RC"
+sweep "$H" > "$WORK/sweep-applied.txt"
+D1=$(newest_backup "$H")
+(cd "$H/kit-backups/$D1" && find . -type f -exec shasum -a 256 {} + | LC_ALL=C sort) > "$WORK/d1-before.txt"
+
+run_check "$H" "$RA" --undo
+assert_eq "undo-roundtrip: undo exits 0" "0" "$RC"
+sweep "$H" > "$WORK/sweep-undone.txt"
+if diff -q "$WORK/sweep-orig.txt" "$WORK/sweep-undone.txt" >/dev/null; then
+  ok "undo-roundtrip: home byte-identical to the pre-apply original"
+else
+  bad "undo-roundtrip: home byte-identical to the pre-apply original" "$(diff "$WORK/sweep-orig.txt" "$WORK/sweep-undone.txt" | head -4 | tr '\n' ' ')"
+fi
+assert_eq "undo-roundtrip: anchor rolled back with the config" "$A1" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+
+D2=$(newest_backup "$H")
+if [ "$D1" != "$D2" ]; then
+  ok "undo-roundtrip: undo backed up into a NEW dir, not the old one"
+else
+  bad "undo-roundtrip: undo backed up into a NEW dir, not the old one" "same dir reused"
+fi
+(cd "$H/kit-backups/$D1" && find . -type f -exec shasum -a 256 {} + | LC_ALL=C sort) > "$WORK/d1-after.txt"
+if diff -q "$WORK/d1-before.txt" "$WORK/d1-after.txt" >/dev/null; then
+  ok "undo-roundtrip: no existing backup file was ever overwritten"
+else
+  bad "undo-roundtrip: no existing backup file was ever overwritten" "first backup dir changed"
+fi
+
+run_check "$H" "$RA" --undo
+assert_eq "undo-roundtrip: undo-of-undo exits 0" "0" "$RC"
+sweep "$H" > "$WORK/sweep-redone.txt"
+if diff -q "$WORK/sweep-applied.txt" "$WORK/sweep-redone.txt" >/dev/null; then
+  ok "undo-roundtrip: undo of the undo restores the applied state"
+else
+  bad "undo-roundtrip: undo of the undo restores the applied state" "state differs"
+fi
+
+# =============================================== A11. undo with no backups
+H="$WORK/h-undo-nothing"; mkdir -p "$H"; apply_home "$H"
+run_check "$H" "$RA" --undo
+assert_eq "undo-empty: refuses politely (exit 3)" "3" "$RC"
+assert_grep "undo-empty: says there is nothing to undo" "nothing to undo" "$OUT"
+if [ -d "$H/kit-backups" ]; then
+  bad "undo-empty: writes nothing" "kit-backups created"
+else
+  ok "undo-empty: writes nothing"
+fi
+
+# ======================================= A12. --apply --undo are exclusive
+run_check "$WORK/h-undo-nothing" "$RA" --apply --undo
+assert_eq "apply-undo-exclusive: exit 3" "3" "$RC"
+assert_grep "apply-undo-exclusive: message names both flags" "mutually exclusive" "$OUT"
+
 # ================================================================== summary
 echo
 echo "=== $PASS passed, $FAIL failed ==="
