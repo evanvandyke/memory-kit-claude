@@ -17,16 +17,7 @@ Review `~/.claude/CLAUDE.md` and answer first:
 Do the reading the project `CLAUDE.md` lists, and prove it the way that file asks. `CLAUDE.md` owns the list (including this project's canonical docs) -- don't re-derive it here.
 
 ## 3. Validate the agenda
-Check the ACTIVE item: is it one deliverable focus, or multiple workstreams packed into one bullet? If compound, surface it to [USER_NAME] before proceeding: "ACTIVE looks like it has [N] independent workstreams -- want to split?"
-
-Internalize the agenda method for this session:
-- **One item in ACTIVE.** If it joins independent work with "and" or requires context-switching between unrelated problems, it's too many. Split and route extras to UP NEXT or FOR SURE.
-- **Adding:** ask which tier (FOR SURE / UP NEXT / IDEAS) before writing. Capture the *why* -- no bare items.
-- **Promoting:** items enter UP NEXT at the bottom slot and earn their way up. When ACTIVE opens, the top *work* slot climbs in (FOLLOW-UP never rises). The freed slot draws from FOR SURE -- propose the pick, never choose silently.
-- **Demoting:** only on a real signal ([USER_NAME] redirects, or a review finds it's no longer priority). Default is hold. A *bump* (still next, just lost to urgency) drops to **top of UP NEXT work slots**, keeping seniority. A *park* (switching tracks) drops to **FOR SURE**.
-- **Decomposition:** if an ACTIVE item can't finish in ~50k tokens, it's a project. Slice it: `Project: [parent] -- [the slice]`. Decompose before it enters ACTIVE.
-- **Swap before you start:** demote or delete the finished ACTIVE and write the next one *before* beginning new work. The agenda is correct before work begins, not after.
-- **Outbound asks → FOLLOW-UP:** every ask in an outbound communication (approvals, access, reviews) becomes a FOLLOW-UP item with a nudge date on send. Items stay open until the recipient confirms -- implementation alone doesn't close them. Every outbound touch resets the nudge date to 3 business days from the send.
+Check the ACTIVE item: is it one deliverable focus, or multiple workstreams packed into one bullet? If compound, surface it to [USER_NAME] before proceeding: "ACTIVE looks like it has [N] independent workstreams -- want to split?" The full agenda method lives in the AGENDA template's management rules and the structure spec -- don't re-derive it here.
 
 ## 4. Read the latest compression note
 Check `Docs_Compressions/` for the most recent note and read it -- it's the bridge from last session (a brand-new project won't have one yet).
