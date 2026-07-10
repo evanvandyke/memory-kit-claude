@@ -4,7 +4,7 @@ Partnership principles live in `~/.claude/CLAUDE.md` (already loaded every sessi
 
 ## At session start, read in order
 1. `AGENDA.md` (project root) -- what's next, and why.
-2. `MEMORY.md` + `feedback.md` -- long-term context and earned rules. **These live in this project's harness memory safe-dir, NOT the project root:** `[MEMORY-SAFE-DIR]`. (The harness also surfaces project memory in context at session start.)
+2. `MEMORY.md` + `feedback.md` -- long-term context and earned rules. **These live in this project's harness memory safe-dir, NOT the project root.** (The harness surfaces the path and the memory itself in context at session start.)
 3. The canonical docs below.
 
 Prove you read them by summarizing their current state in your first response. If you can't summarize it, you didn't read it -- go read it before doing anything else.

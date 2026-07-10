@@ -35,7 +35,6 @@ The doc-system files that live in the project repo -- `CLAUDE.md`, `AGENDA.md`, 
 
 **CLAUDE.md**
 - Session-start reading points at `AGENDA.md` (never `NOW.md`), then `MEMORY.md` + `feedback.md`, then the canonical docs.
-- The reading list **names where `MEMORY.md`/`feedback.md` live -- the resolved memory safe-dir path (`~/.claude/projects/<project-safe-dir>/memory/`), not just their filenames** -- so a reader never looks for them in the project root and wrongly concludes they don't exist. The path must be the actual slugified path for this project (no leftover `[MEMORY-SAFE-DIR]` placeholder), and must match the directory the memory files actually occupy.
 - Has a Canonical Docs list (the project's source-of-truth set memory routes to).
 - Every path it names resolves to a real file.
 - Its sections conform to `CLAUDE-SECTIONS.md` (the section menu); repair audits this.
