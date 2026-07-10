@@ -16,7 +16,7 @@ In `AGENDA.md`:
 
 **Validate first:**
 - Is ACTIVE one item? If it contains multiple independent workstreams (joined by "and" or requiring context-switching), split: keep the primary, route extras to UP NEXT or FOR SURE.
-- Does any FOLLOW-UP item need its nudge date updated? Every outbound touch resets the nudge date to 3 business days from the send. Items awaiting recipient confirmation stay open until confirmed -- implementation alone doesn't close them.
+- Walk FOLLOW-UP against the lifecycle invariant in `~/.claude/project-template/_SPEC.md` (items enter on send, close only on recipient confirmation, nudge date resets on every outbound touch) and update nudge dates and closures accordingly.
 - Is the ACTIVE item sized right? If it can't finish in ~50k tokens, it's a project -- flag for slicing (`Project: [parent] -- [the slice]`).
 
 **Then prune and advance:**
