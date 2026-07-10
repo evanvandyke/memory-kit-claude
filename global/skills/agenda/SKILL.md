@@ -1,7 +1,7 @@
 ---
 name: agenda
-description: "Manage the project's forward-only agenda. Add items, move priorities, surface what's next."
-when_to_use: "User mentions work items, priorities, tasks, or asks what to work on. Also when items need to be added, moved, or reviewed."
+description: "RETIRED. The agenda method now lives in the structure spec (~/.claude/project-template/_SPEC.md), the AGENDA template's management rules, and /wrap. Kept for reference only."
+when_to_use: "Never. Do not invoke -- see _SPEC.md, the AGENDA template, and /wrap instead."
 disable-model-invocation: true
 ---
 
