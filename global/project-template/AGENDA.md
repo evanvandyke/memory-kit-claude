@@ -2,20 +2,20 @@
 
 The forward-only agenda: what's next, plus the *why* behind each item. A rising priority column -- work enters at the bottom and rises as it earns priority until it gets done, then it's deleted. **Not a log.** Never write "last session we..." here; that's the compression note's job.
 
-Read top to bottom = hottest to coldest. When Active finishes, the top *work* slot of UP NEXT climbs in (FOLLOW-UP never rises), then the freed slot draws from FOR SURE. FOR SURE is unordered -- propose the pick, never choose silently.
+Read top to bottom = hottest to coldest. New items enter at a named tier -- ask which (UP NEXT / FOR SURE / IDEAS) before writing, and capture the *why* in one line; no bare items. Promotions enter UP NEXT at the bottom slot and earn their way up. When Active finishes, the top *work* slot of UP NEXT climbs in (FOLLOW-UP never rises), then the freed slot draws from FOR SURE. FOR SURE is unordered -- propose the pick, never choose silently.
 
 > **Tier headers, annotations, and description lines below are structural -- preserve them when editing.**
 
 > **Management rules:**
-> - **Completion is deletion.** Finished items leave. No "done" section.
+> - **Completion is deletion.** Finished items leave. No "done" section. Swap before you start: delete or demote the finished Active and write the next one *before* new work begins.
 > - **Demotion, not deletion.** When a slot is needed, demote the lowest item back to FOR SURE. Never delete an unfinished item to make room.
-> - **Default is hold.** An unfinished Active stays Active unless there's a real signal to move it.
+> - **Default is hold.** An unfinished Active stays Active unless there's a real signal to move it. A *bump* (still next, lost to urgency) drops to the top UP NEXT work slot, keeping seniority; a *park* (switching tracks) drops to FOR SURE.
 > - **Outbound asks → FOLLOW-UP.** When a communication carries asks (approvals, access, reviews), each ask enters FOLLOW-UP with a nudge date on send. Stay open until confirmed by the recipient. Every outbound touch resets the nudge date.
 
 ---
 
 ## ACTIVE  *(limit 1)*
-*The one thing in the light right now.*
+*The one thing in the light right now. One deliverable focus -- independent workstreams joined by "and" are separate items; split and route extras to UP NEXT or FOR SURE.*
 
 -
 
@@ -27,7 +27,7 @@ Read top to bottom = hottest to coldest. When Active finishes, the top *work* sl
 3.
 
 ### FOLLOW-UP  *(third-party asks + calendar gates -- pinned, never rises)*
-*Blocked on someone else or gated on a date. Each item carries a nudge date (default 3 business days from last sent contact). Format: who · last **sent** ask (date + ref) · nudge date. Calendar gates: calendar · gate: [date]. Gated work nests under its blocker as `gated:`. Same-communication items nest under one parent entry. When outbound emails carry asks (approvals, access, reviews), each ask enters here with a nudge date on send. Items stay open until the recipient confirms -- implementation alone doesn't close them. Every outbound touch resets the nudge date.*
+*Blocked on someone else or gated on a date. Each item: who · last **sent** ask (date + ref) · nudge date (default 3 business days from last sent). Calendar gates: calendar · gate: [date]. Gated work nests under its blocker as `gated:`; same-communication asks nest under one parent entry.*
 
 > **Example:**
 > - **Taylor -- Email 20 (sent Jun 22, nudge Jun 25)**
@@ -39,7 +39,7 @@ Read top to bottom = hottest to coldest. When Active finishes, the top *work* sl
 -
 
 ## FOR SURE  *(committed, not scheduled -- unordered)*
-*Projects are headers with indented action bullets. Take one slice at a time.*
+*Projects are headers with indented action bullets. Take one slice at a time -- an item too big to finish in ~50k tokens is a project; slice it (`Project: [parent] -- [the slice]`) before it enters ACTIVE.*
 
 -
 
