@@ -178,9 +178,9 @@ The kit installs to three locations under `~/.claude/`:
 
 The global partnership file. It loads in every session, in every project, automatically. It carries your partnership principles, working preferences, and behavioral instructions that apply everywhere. This is the file you personalize during setup.
 
-### ~/.claude/commands/
+### ~/.claude/skills/
 
-The five skills live here as `.md` files. Claude Code surfaces them as slash commands (`/start`, `/wrap`, `/compress`, `/project-setup`, `/project-repair`) available in every project. They reference the templates and the spec by path, so changing a template or a rule in one place propagates everywhere.
+The five skills live here as `SKILL.md` files. Claude Code surfaces them as slash commands (`/start`, `/wrap`, `/compress`, `/project-setup`, `/project-repair`) available in every project. They reference the templates and the spec by path, so changing a template or a rule in one place propagates everywhere.
 
 ### ~/.claude/project-template/
 

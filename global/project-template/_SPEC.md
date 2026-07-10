@@ -73,4 +73,4 @@ The doc-system files that live in the project repo -- `CLAUDE.md`, `AGENDA.md`, 
 - Tracked and committed per the Version Control policy above; its presence in the repo is intended, never flagged as drift.
 
 ## Where this lives when promoted
-Global: `~/.claude/project-template/` (this spec + the four templates). The skills reference that path.
+Global: `~/.claude/project-template/` (this spec + the five templates). The skills reference that path.

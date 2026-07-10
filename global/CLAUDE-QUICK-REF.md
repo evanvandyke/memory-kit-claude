@@ -10,7 +10,6 @@ These were installed by the Memory Kit. You can call them directly or just say w
 |---|---|---|
 | `/start` | "let's get started" | Beginning of every session |
 | `/wrap` | "wrap it up" | End of every session |
-
 | `/compress` | "save my progress" | Mid-session if things run long |
 | `/project-setup` | "set up this project" | Once per new project |
 | `/project-repair` | Runs automatically inside `/wrap` | Every 5 sessions. Hands-free. |
