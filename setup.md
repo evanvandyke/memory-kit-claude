@@ -513,12 +513,11 @@ Write the new CLAUDE.md.
 
 **Create supporting files:**
 
-- Copy `_SPEC.md` from `~/.claude/project-template/_SPEC.md` to the project root if it doesn't exist. Fill `[USER_NAME]`.
-- Copy `CLAUDE-SECTIONS.md` from `~/.claude/project-template/CLAUDE-SECTIONS.md` to the project root if it doesn't exist.
+- `_SPEC.md` and `CLAUDE-SECTIONS.md` stay in `~/.claude/project-template/` (installed in Step 4) -- the skills read them from there. Do NOT copy them into the project.
 - Write `MEMORY.md` and `feedback.md` from their templates to the project's **memory safe-dir** (`~/.claude/projects/[slug]/memory/`), NOT the project root. Create the directory if it doesn't exist. Fill `[USER_NAME]` and project-level placeholders, including the frontmatter `name:` and `description:` fields as shown in the templates.
 - Read `CLAUDE-QUICK-REF.md` from `/tmp/memory-kit-claude/global/CLAUDE-QUICK-REF.md`, replace `[USER_NAME]`, and write it to the project root if it doesn't exist.
 
-**If the project is a git repo**, run `git add` on the new and replaced root files (AGENDA.md, CLAUDE.md, _SPEC.md, CLAUDE-SECTIONS.md, CLAUDE-QUICK-REF.md).
+**If the project is a git repo**, run `git add` on the new and replaced root files (AGENDA.md, CLAUDE.md, CLAUDE-QUICK-REF.md).
 
 ### C. Clean up
 
@@ -563,7 +562,8 @@ As each file lands, explain what it does in plain language. **For migrated proje
 > - **AGENDA.md** tracks what's next. It's a priority list that cleans itself up. Completed items get deleted, not archived.
 > - **MEMORY.md** holds long-term facts about this project. Things that are still true in 10 sessions.
 > - **feedback.md** stores rules we earn working together. When you correct me and the correction sticks, it goes here.
-> - **_SPEC.md** and **CLAUDE-SECTIONS.md** are reference files I use behind the scenes to keep everything organized. You won't need to open these.
+>
+> There are also two reference files I use behind the scenes, **_SPEC.md** and **CLAUDE-SECTIONS.md**. Those live in `~/.claude/project-template/`, not in your project, so you won't see them here and won't need to open them.
 
 Then create the quick reference card. Read `/tmp/memory-kit-claude/global/CLAUDE-QUICK-REF.md`, replace `[USER_NAME]` with their name, and write it to `CLAUDE-QUICK-REF.md` in the project root. Tell them:
 
