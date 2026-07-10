@@ -34,7 +34,9 @@
 #      retired-present / failed generated check) -- a human needs to look
 #   3  error: clone failed, invalid or unreadable manifest, manifest_schema
 #      newer than this script understands ("update the updater first"),
-#      bad arguments, or another update already holds the lock
+#      bad arguments, missing/empty user_name when the manifest has
+#      personalize:true entries, report path unwritable, or another update
+#      already holds the lock
 #   4  no kit config found -- this install predates the update system; the
 #      adoption offer text is printed and nothing is written
 #
@@ -227,6 +229,14 @@ fi
 HEAD_TSV="$SCRATCH/head.tsv"
 if ! manifest_tsv "$HEAD_MANIFEST" > "$HEAD_TSV"; then
   echo "kit-update-check: manifest at HEAD failed validation (malformed entry)." >&2
+  exit 3
+fi
+
+# A missing/empty user_name would render every personalize:true entry with the
+# empty string and misclassify in-sync files as live-ahead. Hard error instead.
+if [ -z "$USER_NAME" ] && \
+   awk -F'\t' '$3=="copied" && $4=="true" && $5!="retired" {found=1; exit} END{exit !found}' "$HEAD_TSV"; then
+  echo "kit-update-check: config at $CONFIG is missing or has an empty 'user_name', but the manifest has personalize:true entries -- refusing to render with an empty name (every personalized file would misclassify)." >&2
   exit 3
 fi
 
@@ -595,6 +605,13 @@ RESULT=0
   cat "$MACH"
   echo '<!-- MACHINE-END -->'
 } > "$REPORT"
+REPORT_STATUS=$?
+
+# A dry run whose only deliverable failed to land must not exit success-ish.
+if [ "$REPORT_STATUS" -ne 0 ] || [ ! -s "$REPORT" ]; then
+  echo "kit-update-check: could not write the report to $REPORT (directory missing or unwritable?). The classification ran but its evidence was lost, so this run counts as an error." >&2
+  exit 3
+fi
 
 echo "kit-update-check: dry run complete. Report: $REPORT (exit $RESULT)"
 exit $RESULT

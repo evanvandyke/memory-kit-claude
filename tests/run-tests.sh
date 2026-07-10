@@ -399,6 +399,25 @@ assert_eq "updates-available: kit-ahead only run exits 1" "1" "$RC"
 assert_eq "updates-available: solo kit-ahead"             "kit-ahead" "$(state_of "$REPORT" notes/solo.md)"
 assert_grep "changelog-absent: report says so"            "No CHANGELOG.md at HEAD" "$REPORT"
 
+# =========================== 21. missing user_name with personalize:true entries
+H="$WORK/h-noname"; mkdir -p "$H"; home_baseline "$H"
+python3 -c "import json; open('$H/kit-config/memory-kit-claude.json','w').write(json.dumps({'kit':'memory-kit-claude','installed_commit':'$C1','update_source':'$REPO','auto_update':True}))"
+run_check "$H" "$REPO"
+assert_eq "missing-user-name: exit code 3"                       "3" "$RC"
+assert_grep "missing-user-name: message names the missing field" "user_name" "$OUT"
+assert_grep "missing-user-name: message names the config path"   "kit-config/memory-kit-claude.json" "$OUT"
+
+H="$WORK/h-emptyname"; mkdir -p "$H"; home_baseline "$H"
+write_config "$H" "$C1" "$REPO" ""
+run_check "$H" "$REPO"
+assert_eq "empty-user-name: exit code 3" "3" "$RC"
+
+# ============================================== 22. unwritable/nonexistent report path
+H="$WORK/h-badreport"; mkdir -p "$H"; home_baseline "$H"
+run_check "$H" "$REPO" --report "$WORK/no-such-dir/report.md"
+assert_eq "unwritable-report: exit code 3"           "3" "$RC"
+assert_grep "unwritable-report: error names the path" "no-such-dir/report.md" "$OUT"
+
 # ================================================================== summary
 echo
 echo "=== $PASS passed, $FAIL failed ==="

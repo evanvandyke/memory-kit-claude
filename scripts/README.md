@@ -32,7 +32,7 @@ scripts/kit-update-check.sh --home <dir> [--config <path>] [--upstream <url-or-p
 | 0 | All entries in-sync -- nothing to do |
 | 1 | Updates available (only kit-ahead / new / missing states present) |
 | 2 | Escalations present (live-ahead / diverged / conflict / removed-upstream / retired-present / failed generated check) -- a human needs to look |
-| 3 | Error: clone failed, invalid manifest, `manifest_schema` newer than the script ("update the updater first"), bad arguments, or another update already holds the lock |
+| 3 | Error: clone failed, invalid manifest, `manifest_schema` newer than the script ("update the updater first"), bad arguments, missing/empty `user_name` when the manifest has personalize:true entries, unwritable report path, or another update already holds the lock |
 | 4 | No kit config found -- install predates the update system; the adoption offer is printed, nothing written |
 
 ### The report
