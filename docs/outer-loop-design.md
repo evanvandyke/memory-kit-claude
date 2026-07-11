@@ -1,6 +1,6 @@
-# Outer Loop v2.1 -- Manifest-Driven Update Cascade
+# Outer Loop -- Manifest-Driven Update Cascade
 
-Session 22, 2026-07-09. Supersedes `outer-loop-v2-design.md` (kept for history). Revised the same night after an adversarial round: three independent reviewers (mechanics, product/consent, failure-modes) attacked the first draft; 5 blockers and ~15 majors survived verification and are folded in below. What also survived attack, unchanged: commit-SHA detection, render-based comparison, the three-way classifier's direction protection, script-not-agent for the mechanical layer, dry-run-first with fixtures.
+Designed 2026-07-09 (earlier drafts live in Kit Manager's git history); live end-to-end since 2026-07-11. Revised the same night after an adversarial round: three independent reviewers (mechanics, product/consent, failure-modes) attacked the first draft; 5 blockers and ~15 majors survived verification and are folded in below. What also survived attack, unchanged: commit-SHA detection, render-based comparison, the three-way classifier's direction protection, script-not-agent for the mechanical layer, dry-run-first with fixtures.
 
 ## The problem (premise re-verified 2026-07-09)
 
