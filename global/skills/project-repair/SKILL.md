@@ -14,6 +14,26 @@ Audit the project's doc system, fix what's safe, escalate what needs [USER_NAME]
 - **Automatically:** as a step inside `/wrap`, when the new session number is divisible by 5. (`/wrap` supplies the number.)
 - **On demand:** when [USER_NAME] asks, or when behavior suggests drift. No `/wrap` here to supply the number, so derive it. **Canonical rule: N = the highest CONFORMING note integer in `Docs_Compressions/` (a name matching the spec's convention: zero-padded, no suffixes); an empty/absent folder = no prior sessions.** The REPAIR-REVIEW header is labelled with the *current* session number -- i.e. that highest N **plus one**, the in-progress session whose note isn't written yet (empty/absent folder → `1`), exactly as `/wrap` would supply it. If that's somehow ambiguous, use the date alone.
 
+## Step 0 -- Check for kit updates first (Layer 1)
+
+Before auditing this project, reconcile the install against the kit itself. This is Layer 1 of the update cascade, and it runs first so the auditors never read templates that are mid-update.
+
+If `~/.claude/kit-config/memory-kit-claude.json` does **not** exist, this install predates the update system -- skip Layer 1 silently and go straight to Step 1. If the config exists but `~/.claude/kit-scripts/kit-update-check.sh` is missing, treat it like exit 3 below (one calm sentence, continue) -- don't run a command that isn't there.
+
+If both exist, run the update check. This is a dry run: it writes nothing but a report.
+
+```bash
+~/.claude/kit-scripts/kit-update-check.sh --home ~/.claude --report /tmp/kit-update-report.md
+```
+
+Act on the exit code:
+- **0 -- everything is current.** Continue to Step 1 without mentioning updates.
+- **1 -- updates are available.** Read `auto_update` in the config. If it is `true`, apply them: re-run the same command with `--apply` added, then read the assembled changelog lines from the report and relay them to [USER_NAME] in plain language -- what changed, that a backup was made first, and that "undo the last kit update" reverses it. Anything the report marks as needing individual approval (such as the updater script itself) waits for [USER_NAME]'s explicit yes. If `auto_update` is `false`, tell [USER_NAME] that improvements are available and automatic updates are off, and that they can turn them on by saying "turn on auto-updates" -- apply nothing.
+- **2 -- escalations are present** (a file changed on both sides, or something needs a human). Surface these to [USER_NAME] alongside the repair review below; never auto-apply them.
+- **3 -- the check couldn't run** (no connection, or an update is already in progress). Say one calm sentence -- "I couldn't check for kit updates this time; your project checkup still ran" -- and continue to Step 1. Never halt the repair over this.
+
+Then proceed to Step 1. Layer 1 reconciles the kit's own files; Steps 1-3 audit this project.
+
 ## Step 1 -- Launch two independent auditors (Opus, parallel)
 Spin up TWO Opus subagents at once. Each audits independently; neither sees the other's work.
 

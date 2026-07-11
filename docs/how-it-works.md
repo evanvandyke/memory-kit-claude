@@ -172,7 +172,7 @@ The `migration/` directory includes a classification heuristic for migrating exi
 
 ## 6. The Global Layer
 
-The kit installs to three locations under `~/.claude/`:
+The kit installs to these locations under `~/.claude/`:
 
 ### ~/.claude/CLAUDE.md
 
@@ -185,6 +185,12 @@ The five skills live here as `SKILL.md` files. Claude Code surfaces them as slas
 ### ~/.claude/project-template/
 
 The templates and the structure spec. `/project-setup` stamps from here. `/project-repair` audits against here. This is the single source of truth for what a correct project looks like.
+
+### ~/.claude/kit-scripts/ and ~/.claude/kit-config/
+
+These two directories run the update system. `kit-scripts/` holds `kit-update-check.sh`, the classifier that keeps your install current with the kit. `kit-config/memory-kit-claude.json` records what this install knows about itself: the commit it was installed from, where to check for updates, your name, and whether automatic updates are on.
+
+The mechanism is manifest-driven and SHA-anchored. Every run clones the kit, reads the install manifest at your installed commit and at the latest commit, and classifies each file -- in-sync, kit-ahead, or changed on both sides. Only kit-owned files that moved ahead upstream are eligible to update, and only if you opted in during setup. Every write is backed up first to `~/.claude/kit-backups/` with a restore note, so "undo the last kit update" always has something to roll back to. The check runs on the repair cadence (every 5th session) as Layer 1 of `/project-repair`, or whenever you run repair on demand. Files you own are never touched, and nothing is ever deleted -- retired pieces move to `~/.claude/kit-retired/` instead.
 
 ### Per-project files
 

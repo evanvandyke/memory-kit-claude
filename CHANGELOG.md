@@ -2,6 +2,11 @@
 
 Plain-language notes on what changed in the kit, newest first. When the kit updates on your machine, the summary you see is assembled from these lines.
 
+## July 11, 2026 update
+
+- Fresh installs now connect to the kit's update channel during setup, so a brand-new install can keep itself current instead of being frozen at the version it was installed with.
+- The setup wizard installs the update checker and records your install version and name, then hands off to the same automatic check that runs every few sessions -- explained in plain language, backed up first, applied automatically once you opt in during setup, and undoable anytime.
+
 ## July 10, 2026 update
 
 This is the first changelog entry -- changes older than this predate the changelog.

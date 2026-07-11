@@ -418,12 +418,65 @@ For the support file:
 4. Replace `[USER_NAME]` with their name
 5. Write to `~/.claude/Compression-Guide.md`
 
+### Connect the update system
+
+This connects the install so future improvements to the kit can reach it. Without it, the install is frozen at this version forever.
+
+First check whether the two targets already exist:
+
+```bash
+[ -f ~/.claude/kit-scripts/kit-update-check.sh ] && echo "update script exists" || echo "update script not found"
+[ -f ~/.claude/kit-config/memory-kit-claude.json ] && echo "config exists" || echo "config not found"
+```
+
+If either already exists, this install already has the update system. Report what you found and offer **Replace** (take the fresh version) or **Keep** (leave it as-is), evaluating the script and the config independently -- one can be replaced without touching the other. **Keep** leaves the existing update system untouched; the next automatic update check reconciles it either way, so keeping is always safe. Do not overwrite without their choice.
+
+If they don't exist (the common path on a fresh install), first ask whether they want automatic updates turned on. Explain it plainly, then wait for their answer:
+
+> One last thing, and it's optional. I can connect this install to the kit's update channel so improvements can reach it. Here's exactly what that means: about every five sessions, the system checks for improvements to the kit. If it finds any, it makes a backup first, explains in plain language what changed, and applies the update -- and you can undo any update anytime by asking me to "undo the last kit update." Want me to turn that on? (yes or no -- either way the rest of the kit works the same.)
+
+Whatever they answer, install the update checker and write its config. The `auto_update` value records their choice: `True` if they said yes, `False` if they said no. Substitute their name into the `user_name` field, escaping any double-quote or backslash in it so the Python string stays valid.
+
+```bash
+mkdir -p ~/.claude/kit-scripts ~/.claude/kit-config
+cp /tmp/memory-kit-claude/scripts/kit-update-check.sh ~/.claude/kit-scripts/kit-update-check.sh
+chmod 755 ~/.claude/kit-scripts/kit-update-check.sh
+INSTALLED_COMMIT=$(git -C /tmp/memory-kit-claude rev-parse HEAD)
+INSTALLED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+INSTALLED_COMMIT="$INSTALLED_COMMIT" INSTALLED_AT="$INSTALLED_AT" python3 <<'PY'
+import json, os
+config = {
+    "kit": "memory-kit-claude",
+    "installed_commit": os.environ["INSTALLED_COMMIT"],
+    "installed_at": os.environ["INSTALLED_AT"],
+    "update_source": "https://github.com/evanvandyke/memory-kit-claude.git",
+    "user_name": "[their name]",
+    "auto_update": True,
+}
+path = os.path.expanduser("~/.claude/kit-config/memory-kit-claude.json")
+with open(path, "w") as f:
+    json.dump(config, f, indent=2)
+    f.write("\n")
+PY
+```
+
+Set `auto_update` to `True` or `False` per their answer, and put the real name in `user_name` (leave the surrounding double quotes -- Python needs them). Do not add any other fields. Python writes the JSON, so it handles the quoting and escaping for you; there is no heredoc to hand-format.
+
+Then confirm, in plain language, matching what they chose. If they said yes:
+
+> Done -- your install is connected to the kit's update channel. About every five sessions it checks for improvements, backs up first, and tells you in plain language what changed. You can undo any update by asking me to "undo the last kit update," or stop the automatic checks later by saying "turn off auto-updates."
+
+If they said no:
+
+> Done -- the update checker is installed, but automatic updates are off, so nothing changes on its own. Whenever you want it, just say "turn on auto-updates."
+
 After everything is installed, recap:
 
 > All installed. You now have:
 > - Your two session rituals: `/start` and `/wrap`
 > - Three supporting skills that work behind the scenes
 > - Project templates and reference files they all need
+> - A connection to the kit's update channel, so improvements can reach this install
 >
 > Now let's put them to work.
 

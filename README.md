@@ -30,6 +30,8 @@ If that number is north of 10 for any single project, you're already in the zone
 
 **A self-healing repair cycle** that catches and fixes drift before it compounds. Two independent auditors examine the project, a fresh agent reconciles their findings, mechanical fixes are applied automatically, and structural questions are escalated for your review.
 
+**A self-updating install** that keeps the kit current without you managing it. On the repair cadence (every 5th session), the install checks the kit's update channel for improvements. Anything it finds is explained in plain language from the changelog, backed up automatically first, and applied only if you turned on automatic updates when you set the kit up. Changed your mind? Ask Claude to "undo the last kit update" and it rolls back.
+
 ## Quick Start
 
 Open Claude Code in any project and paste this one prompt:
