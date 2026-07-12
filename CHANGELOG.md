@@ -6,7 +6,7 @@ Plain-language notes on what changed in the kit, newest first. When the kit upda
 
 - Fresh installs now connect to the kit's update channel during setup, so a brand-new install can keep itself current instead of being frozen at the version it was installed with.
 - The setup wizard installs the update checker and records your install version and name, then hands off to the same automatic check that runs every few sessions -- explained in plain language, backed up first, applied automatically once you opt in during setup, and undoable anytime.
-- The project checkup can now file kit-improvement notes to the kit author's own review list. This only happens on the author's machine (a config field no client install has) -- on your machine nothing changes and nothing ever leaves your computer.
+- The project checkup gained one small extension point: if a `CUSTOM.md` file exists in the checkup skill's folder, it runs those extra steps at the end. The kit never installs or updates that file, so on a standard install it doesn't exist and the checkup works exactly as before.
 
 ## July 10, 2026 update
 

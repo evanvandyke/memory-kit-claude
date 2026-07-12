@@ -36,7 +36,7 @@ Apply the gate in `MEMORY.md` (route first, then the long-term test). Surface ev
 Any `feedback.md` entry written or modified must be <=150 chars (content only, no number prefix), forward-posture framed, and carry no `Why:` line. Count before saving.
 
 ## Step 4: Finish repair (only if Step 0 launched it)
-The auditors have returned. Diff them: apply the mechanical fixes both agree on (and report them), escalate structural-or-disputed items to `REPAIR-REVIEW.md` in the project root. The review writer always runs; it resolves any disagreements between the two. Full logic lives in `/project-repair`.
+The auditors have returned. Diff them: apply the mechanical fixes both agree on (and report them), escalate structural-or-disputed items to `REPAIR-REVIEW.md` in the project root. The review writer always runs; it resolves any disagreements between the two. Full logic lives in `/project-repair`. Then, if a `CUSTOM.md` exists in the project-repair skill's folder, follow it now.
 
 ## Step 5: Recap
 One line per step: "did X because Y," or "skipped X because Y."

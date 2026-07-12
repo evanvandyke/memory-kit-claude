@@ -44,7 +44,6 @@ Brief each identically, with the project's absolute path filled in:
 Each finding carries:
 - **what** -- the specific drift, with the **verbatim current text** quoted (name the file).
 - **kind** -- `mechanical` (objectively fixable: verbatim duplicate; a date provably past versus today; a file that shouldn't exist; a broken path; a required file missing) or `structural` (judgment: is this still relevant, should this move, is this the right shape).
-- **loop** -- `inner` (this project's content drifted through use) or `outer` (a violation the structure should have prevented, so it likely affects every project). Test: could this happen in any project? If yes, outer.
 - **fix** -- the **verbatim proposed replacement** -- or, for a removal, the verbatim text being dropped + the reason. The finding must be evaluable with zero access to any source file: reproduce the current text in full -- never a label, a line number, an ellipsis, or a summary of what it "said."
 
 ## Step 2 -- Launch the review writer (Opus, fresh context)
@@ -97,15 +96,12 @@ Brief it, with the project path, memory safe-dir path, session number, and both 
 > ```
 > # Repair Review -- session [N], [date]
 >
-> ## Fix this project (inner)
+> ## Fix this project
 > *Evaluable with zero file access -- every change reproduces its current text in full. Test: if reconstructing the exact old or new text would need a source file, it's not finished.*
 > - **[what + file]** · [agreed | auditors differ: A says…, B says…; resolved: …]
 >   - BEFORE: [verbatim current text]
 >   - AFTER:  [verbatim proposed text]
 > - **DROP** · [verbatim removed text] · reason: [graduated-to-global | superseded | scar-only | duplicate]
->
-> ## Signals for the system (outer)
-> - [what] · why it's systemic: [reason] · proposed spec/skill change: [fix]
 >
 > ## Auto-applied (FYI, already done)
 > - [what was fixed without review]
@@ -139,17 +135,4 @@ Brief it, with the project path, memory safe-dir path, session number, and both 
 ## Step 3 -- Hand off
 - The review writer returns its report. Relay it to [USER_NAME]: what was auto-applied, whether a `REPAIR-REVIEW.md` is waiting, and any disagreements that were resolved.
 - A written review doc stays in root; the next `/start` surfaces it.
-- Outer-loop items are the feedback to your global system: a pattern seen across projects means the fix belongs in the global layer -- `~/.claude/project-template/_SPEC.md`, the templates, or the skill files in `~/.claude/skills/` -- so it propagates to every project.
-- **File the outer items to the kit author's review list (author's machine only).** Only when this review actually has outer items: read `~/.claude/kit-config/memory-kit-claude.json`; if it has an `outer_loop_target` path, append the outer items to that file (a local write, never a send). If the review has no outer items, or the field is absent (every client install), do nothing -- the items still live in the review doc, and nothing leaves the machine. Delivery rules:
-  - If the target file doesn't exist yet, create it with this header, then append:
-
-    ```
-    # SYSTEM-SIGNALS -- outer-loop findings awaiting review
-
-    Appended by /project-repair when a finding is systemic (the fix belongs
-    in the kit, not the project). Kit Manager's /start reads this file.
-    Entries dedupe by key; a repeat bumps seen/last. Resolution is deletion.
-    ```
-  - Each item's dedupe key is `[project name] + [check id or file path]`. Search the target for the key before appending: on a match, update that entry's `seen: N` count and `last: [date]` instead of adding a duplicate.
-  - A new entry appends as: `## YYYY-MM-DD -- [project] -- [one-line finding]`, then `key: [the dedupe key]` and `seen: 1, last: [date]` on their own lines, a short evidence body, and the proposed spec/skill change from the review.
-  - Never delete or rewrite existing entries beyond the seen/last bump -- resolution happens in Kit Manager, not here.
+- If a `CUSTOM.md` exists in this skill's folder, follow it now.

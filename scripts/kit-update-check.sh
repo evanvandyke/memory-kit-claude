@@ -1,7 +1,7 @@
 #!/bin/bash
 # kit-update-check.sh -- kit update classifier and applier for memory-kit-claude.
 #
-# Layer 1 of the outer-loop cascade (see outer-loop-v2.1 design). Clones the
+# Layer 1 of the update cascade (see docs/outer-loop-design.md). Clones the
 # kit's update source, reads the install manifest at the installed commit AND
 # at HEAD, classifies every entry against the live install, and writes a
 # report. THE DEFAULT INVOCATION IS A DRY RUN: without --apply it never

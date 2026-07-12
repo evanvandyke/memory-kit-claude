@@ -69,14 +69,13 @@ Rules:
   "update_source": "https://github.com/evanvandyke/memory-kit-claude",
   "user_name": "Evan",
   "auto_update": true,
-  "declined": { "skills/wrap/SKILL.md": "<HEAD SHA at decline time>" },
-  "outer_loop_target": "<path to Kit Manager's SYSTEM-SIGNALS.md -- the kit author's machine only; client configs omit this field>"
+  "declined": { "skills/wrap/SKILL.md": "<HEAD SHA at decline time>" }
 }
 ```
 
 - `installed_commit` is the three-way anchor. **Advance rule (the blocker fix): it is written exactly once per run, at the end, and only if every copied entry then satisfies `live == render(HEAD)`. Otherwise it holds.** No per-file "heal." A crash mid-run therefore leaves the anchor at the old SHA; the next run re-classifies partially-updated files as already-current and finishes the job -- torn state is self-healing instead of latched.
 - `declined` records per-file declined SHAs (`auto_update: false` path): a Kept file is re-prompted only when it changes upstream again -- no nag loop, no soft-coercion.
-- `user_name` recorded because it is machine-readable nowhere else. `outer_loop_target` present only for Evan. Clients' outer findings deliberately never flow upstream (privacy boundary -- held by the absence of any outbound code path, not just config: nothing in the update flow sends data out; the clone is inbound, the report is a local write).
+- `user_name` recorded because it is machine-readable nowhere else. Nothing ever flows upstream from any install (privacy boundary -- held by the absence of any outbound code path: nothing in the update flow sends data out; the clone is inbound, the report is a local write). The author's own signal-collection is not part of the kit at all: it lives in an unmanaged local extension file on the author's machine (see "Author-side signal collection" below).
 
 ## The classifier
 
@@ -139,15 +138,13 @@ Client-facing texts for the three escalation experiences (offline, diverged file
 
 No `kit-config/` entry does NOT mean "stop": repair offers adoption once. Interview for `user_name` if unknown, ask the opt-in question, then classify every entry against `render(HEAD)` only: byte-identical files anchor silently; genuine mismatches get the classic Replace/Keep vocabulary the client learned in the wizard -- **never a diverged-wall report.** `installed_commit` anchors at HEAD once the pass completes. The same posture serves the lost-anchor fallback.
 
-## SYSTEM-SIGNALS.md lifecycle
+## Author-side signal collection (not a kit feature)
 
-- Created by repair on first append (with an explaining header). Surfaced by kit-manager's /start via its CLAUDE.md reading list; no dangling path before first signal.
-- Entry format: a stable dedupe key (`project + check-id-or-file-path`) plus `## YYYY-MM-DD -- <project> -- <one-line finding>` and a short evidence body. A key match bumps `seen: N, last: <date>` instead of duplicating -- free-text prose never carries the dedupe.
-- Resolution is deletion (mirrors the agenda). No "done" section.
+Decided 2026-07-11: the kit ships the inner loop only. No installed file describes, detects, or delivers kit-level findings -- the systemic lens and its delivery live in an unmanaged `CUSTOM.md` extension file on the author's machine, reached through a single generic hook line in the repair skill ("if a CUSTOM.md exists in this skill's folder, follow it now"). The updater neither installs nor touches that file. Rationale (pink-elephant: absence beats obedience; top-down is the product; client-side self-modification forks installs) and the full lifecycle spec (SYSTEM-SIGNALS.md format, dedupe, resolution-is-deletion) live in the author's Kit Manager project, `docs/outer-loop-practice.md`.
 
 ## Dogfood (the guarantee, made real this time)
 
-Evan's config sets `auto_update: true` and **Evan stops hand-installing**: edit kit repo -> push -> his own next repair applies the update through the same classifier, backup, and summary machinery clients use. Kit-manager's CLAUDE.md "How changes flow" section is amended accordingly (Phase 0 deliverable). Without this, Evan's live files always equal `render(HEAD)`, his runs always classify already-current, and the kit-ahead write path -- the one clients live on -- is once again never exercised by its author. Divergences that remain by design: `outer_loop_target`, and richer live-ahead/diverged traffic on Evan's machine (he's the only one generating upstream candidates).
+Evan's config sets `auto_update: true` and **Evan stops hand-installing**: edit kit repo -> push -> his own next repair applies the update through the same classifier, backup, and summary machinery clients use. Kit-manager's CLAUDE.md "How changes flow" section is amended accordingly (Phase 0 deliverable). Without this, Evan's live files always equal `render(HEAD)`, his runs always classify already-current, and the kit-ahead write path -- the one clients live on -- is once again never exercised by its author. Divergences that remain by design: the unmanaged `CUSTOM.md` extension file (outside the manifest, so never classified at all), and richer live-ahead/diverged traffic on Evan's machine (he's the only one generating upstream candidates).
 
 ## Phase 0 -- reconciliation and bootstrap (one-time, prerequisite)
 

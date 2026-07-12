@@ -68,7 +68,7 @@ If `/project-setup` defines "a correct project" and `/project-repair` *also* def
    - **mechanical + both agree** → auto-apply + report in the compression note (reported = not silent). Evan never sees these.
    - **structural, OR the two disagree** → review doc in project root; do not touch. Structural always gets Evan's eyes even when both agree.
 5. **Scope = content drift + structural integrity.** Memory failure modes (doc-mirror, code-mirror, session-log drift, stale dates, contradictions, mis-routed entries, gate violations, and the feedback wellness check -- scar-framing, `Why:` narratives, over-150-char entries, over-15-entry bloat) AND structure checks against the shared spec (files present, paths resolve, AGENDA well-formed, CLAUDE reading list valid). **Plus CLAUDE.md drift** -- it's editable mid-session via `/wrap`, so it bloats and wanders; audit it against `CLAUDE-SECTIONS.md` (every section in the menu, holding only what the menu says).
-6. **Every finding tagged inner or outer.** *inner* = this project's content drifted through normal use → fix here. *outer* = a violation the structure should have prevented → likely in every project → signal back to global-project-manager. Test: *"could this happen in any project?"* → outer.
+6. **Findings are mechanical or structural -- nothing else.** The shipped skill carries no systemic ("could this happen in any project?") classification: that lens is deliberately not a kit feature. It lives in an unmanaged author-side `CUSTOM.md` extension reached through a one-line hook (decided 2026-07-11; rationale and lifecycle: kit-manager `docs/outer-loop-practice.md`).
 7. **Prototype of its output already exists:** `memory-audit-FINDINGS.md` (11 CUT / 4 RELOCATE / 2 KEEP, caught a year-stale date). Repair = make that repeatable + self-contained.
 
 ## How repair rides inside `/wrap` (Evan's pipeline)
@@ -77,14 +77,14 @@ If `/project-setup` defines "a correct project" and `/project-repair` *also* def
 2. **Meanwhile:** main agent prunes the agenda, applies memory per the gate.
 3. **Auditors return → diff:** mechanical+agreed → auto-fix + note; structural-or-disagreed → write to the review doc in root.
 4. **Compression note** records the clean state + what repair auto-applied + whether a review doc is pending.
-5. **Last step of wrap:** if the review doc is non-empty → spin up the reconciler to organize it into one clean, prioritized artifact (inner/outer split, Evan's-call items flagged), then done. Empty → done, nothing for Evan.
+5. **Last step of wrap:** if the review doc is non-empty → spin up the reconciler to organize it into one clean, prioritized artifact (Evan's-call items flagged), then done. Empty → done, nothing for Evan. On Evan's machine only, the `CUSTOM.md` hook then applies the systemic lens (see `outer-loop-practice.md` in kit-manager).
 6. **Next `/start`** surfaces any pending review doc so Evan reviews it fresh in the morning (not a passive file he might miss).
 
 ## The two-loop self-improving system 🔥 (this project's permanent identity)
 
 - **Inner loop (per project):** repair heals the project; the zero-context bar means **every repair run is also a cold dry-run** that re-proves the docs are operable from instructions alone. Heal loop = validate loop.
-- **Outer loop (global):** outer-tagged findings flow back **here, to global-project-manager.** A drift pattern across projects = a shared-spec/skill bug, not a project bug. Diagnose here → fix the shared spec or `/project-repair` → propagates on next install/update.
-- **Therefore:** this project is not a workshop we abandon after rollout. It's the **control tower the outer loop reports to, permanently.** Repair's outer-tagged findings are its standing inbound feed.
+- **Outer loop (author-side practice, not a kit feature):** on Evan's machine, an unmanaged `CUSTOM.md` extension applies the systemic lens to each finished review and files kit-level findings to Kit Manager's `SYSTEM-SIGNALS.md`. A drift pattern across projects = a kit bug, not a project bug. Diagnose in Kit Manager → fix the kit repo → push → propagates to every install through the update cascade.
+- **Therefore:** Kit Manager is not a workshop we abandon after rollout. It's the **control tower the outer loop reports to, permanently.** The CUSTOM.md deliveries are its standing inbound feed -- from Evan's machines only; client installs carry no trace of the mechanism.
 
 ## Always-loaded vs optional (who owns the reading)
 `CLAUDE.md` auto-loads every session; `/start` is optional (skills are toolboxes, not mandates). So **what must happen every session lives in the always-loaded `CLAUDE.md`; `/start` is the deliberate-open layer on top and never duplicates it.**
@@ -104,5 +104,5 @@ Split skills · names (setup/repair; "repair" not "cleanup") · cadence = every 
 ## Resolved (these shipped during the build)
 
 - **Contents of the shared spec** -- written as `_SPEC.md`: the exact "correct project" definition both skills read (required files, memory model, version-control policy, the per-doc invariants repair checks).
-- **Review-doc section template** -- shipped in `project-repair.md` (Step 4): inner / outer / auto-applied sections, each item carrying what drifted · auditor agreement-or-disagreement · proposed fix.
+- **Review-doc section template** -- shipped in the project-repair skill: "Fix this project" and "Auto-applied" sections, each item carrying what drifted · auditor agreement-or-disagreement · proposed fix.
 - **Standing-approval / apply-vs-escalate list** -- shipped in `project-repair.md` (Step 3): mechanical-and-both-agree auto-applies (stamp a missing file, fix a broken path or stale date, remove a verbatim duplicate, consolidate a stray memory file); structural-or-disagreement always escalates to `REPAIR-REVIEW.md`. Grows with use.
