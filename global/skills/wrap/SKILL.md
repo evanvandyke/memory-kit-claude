@@ -8,10 +8,19 @@ when_to_use: "User says 'wrap it up,' 'let's wrap,' 'we're done,' 'close the ses
 
 Close out the session. Work through each step end to end; skip what doesn't apply; keep additions tight.
 
-## Step 0: Session number + repair check
-**Canonical rule: N = the integer in the highest-numbered note filename in `Docs_Compressions/` (zero-padded, no suffixes); an empty/absent folder = no prior sessions.** `/wrap` is closing the *current* session and about to write its note, so this session's number is that highest N **plus one** (empty/absent folder -> session 1). **If that number is divisible by 5, invoke `/project-repair` -- this is mandatory, not one of the steps you may skip.** Repair always applies on a 5th session regardless of session length, context pressure, or perceived project health. Launch its two independent auditors in the background so they work through the steps below while you finish wrapping.
+## Step 0: Session number
+**Canonical rule: N = the integer in the highest-numbered note filename in `Docs_Compressions/` (zero-padded, no suffixes); an empty/absent folder = no prior sessions.** `/wrap` is closing the *current* session and about to write its note, so this session's number is that highest N **plus one** (empty/absent folder -> session 1). Hold onto N -- the note filename uses it, and Step 1 checks whether it's divisible by 5.
 
-## Step 1: Validate, prune, and advance the agenda
+## Step 1: Launch repair on cadence
+If the session number is divisible by 5, invoke a subagent to run the `/project-repair` skill in full, passing the project's absolute path, and let it work in the background while you continue. This is mandatory when the number is divisible by 5, not one of the steps you may skip. Any other session number: skip this step.
+
+## Step 2: Compress
+Run `/compress` to bank the self-authored handoff note now -- it works in parallel with the repair subagent when one is running.
+
+## Step 3: Finish repair (only if Step 1 launched it)
+Wait for the repair subagent to finish before continuing -- the steps below edit files repair may update or audit. Relay its report to [USER_NAME]: any kit-update result, what was auto-applied, whether a `REPAIR-REVIEW.md` is waiting.
+
+## Step 4: Validate, prune, and advance the agenda
 In `AGENDA.md`:
 
 **Validate first:**
@@ -27,19 +36,13 @@ In `AGENDA.md`:
 
 Preserve the tier headers, annotations, and description lines -- they're structural. Leave the agenda correct for next session.
 
-## Step 2: CLAUDE.md stable facts (only if changed)
+## Step 5: CLAUDE.md stable facts (only if changed)
 Update `CLAUDE.md` only if a durable orientation fact changed this session (the stack, a convention, a canonical-doc pointer). Status and current state are the agenda's job, not this. Otherwise skip.
 
-## Step 3: Memory per the gate
+## Step 6: Memory per the gate
 Apply the gate in `MEMORY.md` (route first, then the long-term test). Surface every write as you make it. If nothing clears the gate, say so and skip. Never create files beyond `MEMORY.md` + `feedback.md`.
 
 Any `feedback.md` entry written or modified must be <=150 chars (content only, no number prefix), forward-posture framed, and carry no `Why:` line. Count before saving.
 
-## Step 4: Finish repair (only if Step 0 launched it)
-The auditors have returned. Diff them: apply the mechanical fixes both agree on (and report them), escalate structural-or-disputed items to `REPAIR-REVIEW.md` in the project root. The review writer always runs; it resolves any disagreements between the two. Full logic lives in `/project-repair`. Then, if a `CUSTOM.md` exists in the project-repair skill's folder, follow it now.
-
-## Step 5: Recap
+## Step 7: Recap
 One line per step: "did X because Y," or "skipped X because Y."
-
-## Step 6: Compress (last)
-Run `/compress` to bank the self-authored note -- it captures the now-clean state. This is the final step.

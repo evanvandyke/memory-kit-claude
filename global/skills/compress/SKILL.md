@@ -1,7 +1,7 @@
 ---
 name: compress
 description: "Write a self-authored handoff note capturing the session's progress. Usually runs automatically inside /wrap."
-when_to_use: "User says 'save my progress,' 'compress,' or needs a mid-session handoff note. Also called as the last step of /wrap."
+when_to_use: "User says 'save my progress,' 'compress,' or needs a mid-session handoff note. Also called as a step during /wrap."
 ---
 
 # Compress

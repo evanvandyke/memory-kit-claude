@@ -71,14 +71,12 @@ If `/project-setup` defines "a correct project" and `/project-repair` *also* def
 6. **Findings are mechanical or structural -- nothing else.** The shipped skill carries no systemic ("could this happen in any project?") classification: that lens is deliberately not a kit feature. It lives in an unmanaged author-side `CUSTOM.md` extension reached through a one-line hook (decided 2026-07-11; rationale and lifecycle: kit-manager `docs/outer-loop-practice.md`).
 7. **Prototype of its output already exists:** `memory-audit-FINDINGS.md` (11 CUT / 4 RELOCATE / 2 KEEP, caught a year-stale date). Repair = make that repeatable + self-contained.
 
-## How repair rides inside `/wrap` (Evan's pipeline)
+## How repair rides inside `/wrap` (the pipeline)
 
-1. **Early in wrap:** launch the 2 auditors in the background; they work while the rest of wrap proceeds.
-2. **Meanwhile:** main agent prunes the agenda, applies memory per the gate.
-3. **Auditors return → diff:** mechanical+agreed → auto-fix + note; structural-or-disagreed → write to the review doc in root.
-4. **Compression note** records the clean state + what repair auto-applied + whether a review doc is pending.
-5. **Last step of wrap:** if the review doc is non-empty → spin up the reconciler to organize it into one clean, prioritized artifact (Evan's-call items flagged), then done. Empty → done, nothing for Evan. On Evan's machine only, the `CUSTOM.md` hook then applies the systemic lens (see `outer-loop-practice.md` in kit-manager).
-6. **Next `/start`** surfaces any pending review doc so Evan reviews it fresh in the morning (not a passive file he might miss).
+1. **Wrap derives the session number.** If it's divisible by 5, wrap launches a subagent to run `/project-repair` in full -- repair is self-contained and owns its whole process (update check, two auditors, review writer, hand-off, and on Evan's machine only, the `CUSTOM.md` systemic lens -- see `outer-loop-practice.md` in kit-manager).
+2. **While repair works, wrap compresses** -- the handoff note is written in parallel.
+3. **Wrap waits for repair to finish**, relays its report (any kit-update result, what was auto-applied, whether a review doc is waiting), and only then edits the project -- agenda pruning and memory run under whatever template rules repair just brought current, never one session behind.
+4. **Next `/start`** surfaces any pending review doc so Evan reviews it fresh (not a passive file he might miss).
 
 ## The two-loop self-improving system 🔥 (this project's permanent identity)
 

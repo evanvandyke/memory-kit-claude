@@ -11,14 +11,14 @@ Audit the project's doc system, fix what's safe, escalate what needs [USER_NAME]
 **The project is the current working directory.** Read `~/.claude/project-template/_SPEC.md` first; it defines a correct project, and everything below checks reality against it.
 
 ## When this runs
-- **Automatically:** as a step inside `/wrap`, when the new session number is divisible by 5. (`/wrap` supplies the number.)
-- **On demand:** when [USER_NAME] asks, or when behavior suggests drift. No `/wrap` here to supply the number, so derive it. **Canonical rule: N = the highest CONFORMING note integer in `Docs_Compressions/` (a name matching the spec's convention: zero-padded, no suffixes); an empty/absent folder = no prior sessions.** The REPAIR-REVIEW header is labelled with the *current* session number -- i.e. that highest N **plus one**, the in-progress session whose note isn't written yet (empty/absent folder → `1`), exactly as `/wrap` would supply it. If that's somehow ambiguous, use the date alone.
+- **Automatically:** invoked by `/wrap` every 5th session.
+- **On demand:** when [USER_NAME] asks, or when behavior suggests drift.
 
 ## Step 0 -- Check for kit updates first (Layer 1)
 
 Before auditing this project, reconcile the install against the kit itself. This is Layer 1 of the update cascade, and it runs first so the auditors never read templates that are mid-update.
 
-If `~/.claude/kit-config/memory-kit-claude.json` does **not** exist, this install predates the update system -- skip Layer 1 silently and go straight to Step 1. If the config exists but `~/.claude/kit-scripts/kit-update-check.sh` is missing, treat it like exit 3 below (one calm sentence, continue) -- don't run a command that isn't there.
+If `~/.claude/kit-config/memory-kit-claude.json` does **not** exist, skip Layer 1 silently and go straight to Step 1. If the config exists but `~/.claude/kit-scripts/kit-update-check.sh` is missing, treat it as exit 3 below.
 
 If both exist, run the update check. This is a dry run: it writes nothing but a report.
 
@@ -26,20 +26,41 @@ If both exist, run the update check. This is a dry run: it writes nothing but a 
 ~/.claude/kit-scripts/kit-update-check.sh --home ~/.claude --report /tmp/kit-update-report.md
 ```
 
-Act on the exit code:
+Run the script. When it finishes it returns a number -- the exit code -- that tells you what happened. Act on it:
 - **0 -- everything is current.** Continue to Step 1 without mentioning updates.
 - **1 -- updates are available.** Read `auto_update` in the config. If it is `true`, apply them: re-run the same command with `--apply` added, then read the assembled changelog lines from the report and relay them to [USER_NAME] in plain language -- what changed, that a backup was made first, and that "undo the last kit update" reverses it. Anything the report marks as needing individual approval (such as the updater script itself) waits for [USER_NAME]'s explicit yes. If `auto_update` is `false`, tell [USER_NAME] that improvements are available and automatic updates are off, and that they can turn them on by saying "turn on auto-updates" -- apply nothing.
 - **2 -- escalations are present** (a file changed on both sides, or something needs a human). Surface these to [USER_NAME] alongside the repair review below; never auto-apply them.
 - **3 -- the check couldn't run** (no connection, or an update is already in progress). Say one calm sentence -- "I couldn't check for kit updates this time; your project checkup still ran" -- and continue to Step 1. Never halt the repair over this.
 
-Then proceed to Step 1. Layer 1 reconciles the kit's own files; Steps 1-3 audit this project.
+Then proceed to Step 1. Layer 1 reconciles the kit's own files; Steps 1-3 audit this project. When running as a subagent, fold these update outcomes into the Step 3 report instead of addressing [USER_NAME] directly.
 
 ## Step 1 -- Launch two independent auditors (Opus, parallel)
 Spin up TWO Opus subagents at once. Each audits independently; neither sees the other's work.
 
 Brief each identically, with the project's absolute path filled in:
 
-> You have zero prior context on the project at `[project path]`. You are an auditor: report findings only, modify nothing -- no file you read gets edited, created, or deleted by you. Read `~/.claude/project-template/_SPEC.md` and `~/.claude/project-template/CLAUDE-SECTIONS.md`, then read that project's `CLAUDE.md`, `AGENDA.md`, and its `MEMORY.md` + `feedback.md` (in the memory safe-dir the spec names), plus the memory-directory listing AND the `Docs_Compressions/` listing in the project root. Audit the project against the spec and the section index. Check every `Docs_Compressions/` note name against the spec's integer convention (`session-NN-…`, zero-padded, no letter suffixes, no gaps) -- a suffixed or gapped name dated **on or after 2026-06-05** is a mechanical finding. **Notes dated before 2026-06-05 are grandfathered (pre-convention / migrated history) -- do not flag them.** Also sweep **`feedback.md`** (and any scar that's leaked into `MEMORY.md`) for **scar-framing** -- an earned rule written as a past failure ("last time you did X wrong", "stop doing Y") instead of a forward posture. Per `_SPEC`'s feedback invariant and the pink-elephant principle (describe the desired behavior, not the avoided one), naming the behavior to avoid plants it, so a scar trains avoidance, not a heading. For each: if a forward posture is extractable, propose **reframing** to what TO do (keep the rule, drop the blame); if nothing but the wound remains once the blame is stripped, propose **cutting** it. Tag these `structural` so they reach [USER_NAME] -- never an auto-rewrite or delete of `feedback.md`. Also check `feedback.md` against `_SPEC`'s hard limits -- each entry ≤150 chars, numbered sequentially, no `Why:` lines, ≤15 entries total -- and flag every violation: propose compressing over-long entries, folding `Why:` lines into the rule, and (if over 15) a purge set (priority: graduated-to-global → superseded → least-applicable). Also apply `_SPEC`'s feedback durability invariant: propose cuts for entries that no longer earn their slot (graduated-to-global, superseded, least-applicable) even when the file is under the cap. All `structural` proposals in `REPAIR-REVIEW.md`; never auto-edit feedback. Every proposed replacement for a feedback entry must itself comply: ≤150 chars (content only, no number prefix), forward-posture framed, no `Why:` lines -- a non-compliant proposal gets flagged the same as a non-compliant entry. Compound-ACTIVE findings are `structural`, propose-only -- never auto-split an ACTIVE item. Client-comms closure findings are `structural`, propose-only -- never auto-close a FOLLOW-UP item. Check whether the project's `.gitignore` (if any) excludes `CLAUDE.md`, `AGENDA.md`, or `Docs_Compressions/`. Per the spec's version-control decision, these are tracked and committed in non-client repos. A gitignore pattern hiding them is `mechanical` drift -- unless the project lives under `clients/`, where ignoring them is correct (client-repo exception). Check that `MEMORY.md` carries its required structural header: the routing table, the gate (route first → read before writing → 250-char cap), and the NO SILENT WRITES rule. A missing or incomplete header is `structural`. Flag any `NOW.md` or `MIGRATION-REVIEW.md` in the project root as `mechanical` -- these are leftover migration artifacts from the old system. Return every deviation as a finding.
+> **Role + hard rules.** You have zero prior context on the project at `[project path]`. You are an auditor: report findings only, modify nothing -- no file you read gets edited, created, or deleted by you.
+>
+> **Read these:**
+> - `~/.claude/project-template/_SPEC.md` and `~/.claude/project-template/CLAUDE-SECTIONS.md`
+> - the project's `CLAUDE.md`, `AGENDA.md`, and its `MEMORY.md` + `feedback.md` (in the memory safe-dir the spec names)
+> - the memory-directory listing AND the `Docs_Compressions/` listing in the project root
+>
+> **Check these** (one finding per deviation):
+> - **Spec + section index.** Audit the project against the spec and the section index.
+> - **Compression-note naming.** Check every `Docs_Compressions/` note name against the spec's integer convention (`session-NN-…`, zero-padded, no letter suffixes, no gaps) -- a suffixed or gapped name dated **on or after 2026-06-05** is a `mechanical` finding. **Notes dated before 2026-06-05 are grandfathered (pre-convention / migrated history) -- do not flag them.**
+> - **Feedback scar-framing.** Sweep `feedback.md` (and any scar that's leaked into `MEMORY.md`) for scar-framing -- an earned rule written as a past failure ("last time you did X wrong", "stop doing Y") instead of a forward posture. Per `_SPEC`'s feedback invariant and the pink-elephant principle (describe the desired behavior, not the avoided one), naming the behavior to avoid plants it, so a scar trains avoidance, not a heading. For each: if a forward posture is extractable, propose **reframing** to what TO do (keep the rule, drop the blame); if nothing but the wound remains once the blame is stripped, propose **cutting** it. Tag these `structural` so they reach [USER_NAME] -- never an auto-rewrite or delete of `feedback.md`.
+> - **Feedback hard limits.** Check `feedback.md` against `_SPEC`'s hard limits -- each entry ≤150 chars, numbered sequentially, no `Why:` lines, ≤15 entries total -- and flag every violation: propose compressing over-long entries, folding `Why:` lines into the rule, and (if over 15) a purge set (priority: graduated-to-global → superseded → least-applicable).
+> - **Feedback durability.** Apply `_SPEC`'s feedback durability invariant: propose cuts for entries that no longer earn their slot (graduated-to-global, superseded, least-applicable) even when the file is under the cap.
+> - **Compound-ACTIVE.** Findings are `structural`, propose-only -- never auto-split an ACTIVE item.
+> - **Client-comms closure.** Findings are `structural`, propose-only -- never auto-close a FOLLOW-UP item.
+> - **Gitignore.** Check whether the project's `.gitignore` (if any) excludes `CLAUDE.md`, `AGENDA.md`, or `Docs_Compressions/`. Per the spec's version-control decision, these are tracked and committed in non-client repos. A gitignore pattern hiding them is `mechanical` drift -- unless the project lives under `clients/`, where ignoring them is correct (client-repo exception).
+> - **MEMORY.md structural header.** Check that `MEMORY.md` carries its required structural header: the routing table, the gate (route first → read before writing → 250-char cap), and the NO SILENT WRITES rule. A missing or incomplete header is `structural`.
+> - **Migration leftovers.** Flag any `NOW.md` or `MIGRATION-REVIEW.md` in the project root as `mechanical` -- these are leftover migration artifacts from the old system.
+>
+> All `structural` proposals go in `REPAIR-REVIEW.md`; never auto-edit feedback. Every proposed replacement for a feedback entry must itself comply: ≤150 chars (content only, no number prefix), forward-posture framed, no `Why:` lines -- a non-compliant proposal gets flagged the same as a non-compliant entry.
+>
+> Return every deviation as a finding.
 
 Each finding carries:
 - **what** -- the specific drift, with the **verbatim current text** quoted (name the file).
@@ -48,11 +69,11 @@ Each finding carries:
 
 ## Step 2 -- Launch the review writer (Opus, fresh context)
 
-**The session agent never writes the review.** By this point in the session, the session agent may be deep into context and prone to summarizing instead of quoting verbatim. A fresh Opus agent -- zero accumulated context, one job -- diffs the auditors' findings, applies safe fixes, writes the review doc, and resolves disagreements.
+A fresh agent with one job writes the review. Launch a review-writer subagent (Opus, zero accumulated context): it diffs the auditors' findings, applies safe fixes, writes the review doc, and resolves disagreements.
 
 Pass both auditors' complete findings to the review writer. Do not summarize, filter, or reformat them -- pass the raw output. The review writer handles everything from here.
 
-Brief it, with the project path, memory safe-dir path, session number, and both auditors' raw findings injected:
+Brief it, with the project path, memory safe-dir path, and both auditors' raw findings injected:
 
 > You are the review writer for a project repair audit. You have zero prior context. Two independent auditors have examined the project at `[project path]` and returned their findings below. Your job: diff the findings, apply safe mechanical fixes, and write the review document for anything that needs [USER_NAME]'s decision.
 >
@@ -94,7 +115,7 @@ Brief it, with the project path, memory safe-dir path, session number, and both 
 > Otherwise, write `REPAIR-REVIEW.md` at `[project path]/REPAIR-REVIEW.md` using this format:
 >
 > ```
-> # Repair Review -- session [N], [date]
+> # Repair Review -- [project name], [YYYY-MM-DD]
 >
 > ## Fix this project
 > *Evaluable with zero file access -- every change reproduces its current text in full. Test: if reconstructing the exact old or new text would need a source file, it's not finished.*
@@ -133,6 +154,6 @@ Brief it, with the project path, memory safe-dir path, session number, and both 
 > **4. Report** what you applied and whether a review doc was written.
 
 ## Step 3 -- Hand off
-- The review writer returns its report. Relay it to [USER_NAME]: what was auto-applied, whether a `REPAIR-REVIEW.md` is waiting, and any disagreements that were resolved.
+- The review writer returns its report. Report back to your caller: any kit-update result from Step 0 (the plain-language changelog, escalations, or the couldn't-check sentence), what was auto-applied, whether a `REPAIR-REVIEW.md` is waiting, and any disagreements that were resolved. (When run directly rather than as a subagent, relay this to [USER_NAME].)
 - A written review doc stays in root; the next `/start` surfaces it.
 - If a `CUSTOM.md` exists in this skill's folder, follow it now.

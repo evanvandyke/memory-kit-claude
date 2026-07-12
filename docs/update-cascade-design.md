@@ -1,4 +1,4 @@
-# Outer Loop -- Manifest-Driven Update Cascade
+# The Update Cascade -- Manifest-Driven Kit Updates
 
 Designed 2026-07-09 (earlier drafts live in Kit Manager's git history); live end-to-end since 2026-07-11. Revised the same night after an adversarial round: three independent reviewers (mechanics, product/consent, failure-modes) attacked the first draft; 5 blockers and ~15 majors survived verification and are folded in below. What also survived attack, unchanged: commit-SHA detection, render-based comparison, the three-way classifier's direction protection, script-not-agent for the mechanical layer, dry-run-first with fixtures.
 
