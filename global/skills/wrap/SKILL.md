@@ -9,10 +9,10 @@ when_to_use: "User says 'wrap it up,' 'let's wrap,' 'we're done,' 'close the ses
 Close out the session. Work through each step end to end; skip what doesn't apply; keep additions tight.
 
 ## Step 0: Session number
-**Canonical rule: N = the integer in the highest-numbered note filename in `Docs_Compressions/` (zero-padded, no suffixes); an empty/absent folder = no prior sessions.** `/wrap` is closing the *current* session and about to write its note, so this session's number is that highest N **plus one** (empty/absent folder -> session 1). Hold onto N -- the note filename uses it, and Step 1 checks whether it's divisible by 5.
+**Canonical rule: N = the integer in the highest-numbered note filename in `Docs_Compressions/` (zero-padded, no suffixes); an empty/absent folder = no prior sessions.** `/wrap` is closing the *current* session and about to write its note, so this session's number is that highest N **plus one** (empty/absent folder -> session 1). Hold onto N -- the note filename uses it, and Step 1 checks whether it ends in 0 or 5.
 
 ## Step 1: Launch repair on cadence
-If the session number is divisible by 5, invoke a subagent to run the `/project-repair` skill in full, passing the project's absolute path, and let it work in the background while you continue. This is mandatory when the number is divisible by 5, not one of the steps you may skip. Any other session number: skip this step.
+If the session number ends in 0 or 5, invoke a subagent to run the `/project-repair` skill in full, passing the project's absolute path, and let it work in the background while you continue. This is mandatory when the number ends in 0 or 5, not one of the steps you may skip. Any other session number: skip this step.
 
 ## Step 2: Compress
 Run `/compress` to bank the self-authored handoff note now -- it works in parallel with the repair subagent when one is running.

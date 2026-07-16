@@ -39,7 +39,7 @@ Spin up TWO Opus subagents at once. Each audits independently; neither sees the 
 
 Brief each identically, with the project's absolute path filled in:
 
-> **Role + hard rules.** You have zero prior context on the project at `[project path]`. You are an auditor: report findings only, modify nothing -- no file you read gets edited, created, or deleted by you.
+> **Role + hard rules.** You have zero prior context on the project at `[project path]`. You are an auditor: report findings only, modify nothing -- no file you read gets edited, created, or deleted by you. Finalize from your own reading; do not call optional server-side consultation tools (e.g. advisor) -- the checklist is deterministic and those calls can stall your run.
 >
 > **Read these:**
 > - `~/.claude/project-template/_SPEC.md` and `~/.claude/project-template/CLAUDE-SECTIONS.md`
@@ -75,7 +75,7 @@ Pass both auditors' complete findings to the review writer. Do not summarize, fi
 
 Brief it, with the project path, memory safe-dir path, and both auditors' raw findings injected:
 
-> You are the review writer for a project repair audit. You have zero prior context. Two independent auditors have examined the project at `[project path]` and returned their findings below. Your job: diff the findings, apply safe mechanical fixes, and write the review document for anything that needs [USER_NAME]'s decision.
+> You are the review writer for a project repair audit. You have zero prior context. Two independent auditors have examined the project at `[project path]` and returned their findings below. Your job: diff the findings, apply safe mechanical fixes, and write the review document for anything that needs [USER_NAME]'s decision. Finalize from your own reading; do not call optional server-side consultation tools (e.g. advisor) -- they can stall your run.
 >
 > **The source files** (read these -- you will need them for verbatim quoting):
 > - `[project path]/CLAUDE.md`
