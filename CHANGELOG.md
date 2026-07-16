@@ -9,6 +9,7 @@ Plain-language notes on what changed in the kit, newest first. When the kit upda
 - Memory entries now get their 250-character limit checked at the moment they're written during wrap-up, instead of waiting for a checkup to catch oversized entries later.
 - The checkup coordinator and session wrap-up now actively shepherd their helper agents: if a helper stalls or quietly finishes, they check its output and restart it if needed, so checkups can't hang waiting on a helper that already stopped.
 - Project-slice agenda titles use an arrow instead of a double dash: `Project: [parent] → [the slice]`. Existing agenda items keep working; new slices use the arrow.
+- When the kit's built-in agenda wording improves, checkups now quietly bring your projects up to date in one step instead of asking you to approve each changed line. Your own agenda items are never touched by this; it only applies to the kit's own structural lines.
 
 ## July 15, 2026 update
 
