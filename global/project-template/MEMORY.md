@@ -1,15 +1,15 @@
 ---
 name: [project-slug]-memory
-description: Long-term memory for [project] -- durable facts about the project and how [USER_NAME] works. One file; read fully at session start.
+description: Long-term memory for [project]. Durable facts about the project and how [USER_NAME] works. One file; read fully at session start.
 metadata:
   type: project
 ---
 
-# [Project] -- Memory
+# [Project]: Memory
 
 Long-term memory: durable facts about the project and about how [USER_NAME] works. NOT episodic. What happened this session is not memory; that is the compression note's job. Fast test before saving: would long-term memory hold this, or is it just what happened recently?
 
-## Before saving -- route it
+## Before saving: route it
 Most "I should remember this" impulses belong elsewhere. If it fits a row, it goes THERE:
 
 | If it's… | It belongs in… |
