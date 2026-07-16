@@ -26,7 +26,7 @@ In `AGENDA.md`:
 **Validate first:**
 - Is ACTIVE one item? If it contains multiple independent workstreams (joined by "and" or requiring context-switching), split: keep the primary, route extras to UP NEXT or FOR SURE.
 - Walk FOLLOW-UP against the lifecycle invariant in `~/.claude/project-template/_SPEC.md` (items enter on send, close only on recipient confirmation, nudge date resets on every outbound touch) and update nudge dates and closures accordingly.
-- Is the ACTIVE item sized right? If it can't finish in ~50k tokens, it's a project. Flag for slicing (`Project: [parent] -- [the slice]`).
+- Is the ACTIVE item sized right? If it can't finish in ~50k tokens, it's a project. Flag for slicing (`Project: [parent] → [the slice]`).
 
 **Then prune and advance:**
 - Delete completed items (completion = deletion).

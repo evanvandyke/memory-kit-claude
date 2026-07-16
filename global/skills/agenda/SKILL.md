@@ -32,9 +32,9 @@ The rise: `IDEAS → FOR SURE → UP NEXT → ACTIVE → done (deleted)`.
 
 **One thing is ~50k tokens.** If an item can't be finished in roughly 50k tokens, it's a *project*: it lives in For Sure as a header with action bullets, and you take **one slice** at a time. Decompose before anything enters Active.
 
-**A slice carries its project's name.** When an Active or Up Next item is one cut from a For Sure project, title it `Project: [exact project name] -- [the slice]`, matching the For Sure header. This shows you're taking a slice, not doing the whole project at once, and traces the slice back to its parent.
+**A slice carries its project's name.** When an Active or Up Next item is one cut from a For Sure project, title it `Project: [exact project name] → [the slice]`, matching the For Sure header. This shows you're taking a slice, not doing the whole project at once, and traces the slice back to its parent.
 
-**A sub-project nests inline, never in its own file.** A project can contain a smaller initiative, big enough to track its own work, not yet big enough to stand alone. Its items live in *this same* AGENDA, tagged `Project: [parent] -- Subproject: [sub] -- [the slice]`. No nested AGENDA files. The sub-project graduates to its own standalone project (own root + AGENDA) only once it's earned the separation.
+**A sub-project nests inline, never in its own file.** A project can contain a smaller initiative, big enough to track its own work, not yet big enough to stand alone. Its items live in *this same* AGENDA, tagged `Project: [parent] → Subproject: [sub] → [the slice]`. No nested AGENDA files. The sub-project graduates to its own standalone project (own root + AGENDA) only once it's earned the separation.
 
 **How things rise and fall.**
 - *Rise (promote):* an item moving up from For Sure enters Up Next at the **bottom** slot and earns its way up. When Active opens, the top **work** slot climbs into it.

@@ -8,6 +8,7 @@ Plain-language notes on what changed in the kit, newest first. When the kit upda
 - Compression notes get a new heading format inside the note: `# Session NN (YYYY-MM-DD): Title`. Existing notes keep their old headings; only new notes use it.
 - Memory entries now get their 250-character limit checked at the moment they're written during wrap-up, instead of waiting for a checkup to catch oversized entries later.
 - The checkup coordinator and session wrap-up now actively shepherd their helper agents: if a helper stalls or quietly finishes, they check its output and restart it if needed, so checkups can't hang waiting on a helper that already stopped.
+- Project-slice agenda titles use an arrow instead of a double dash: `Project: [parent] → [the slice]`. Existing agenda items keep working; new slices use the arrow.
 
 ## July 15, 2026 update
 

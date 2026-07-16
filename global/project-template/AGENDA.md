@@ -39,7 +39,7 @@ Read top to bottom = hottest to coldest. New items enter at a named tier. Ask wh
 -
 
 ## FOR SURE  *(committed, not scheduled, unordered)*
-*Projects are headers with indented action bullets. Take one slice at a time. An item too big to finish in ~50k tokens is a project; slice it (`Project: [parent] -- [the slice]`) before it enters ACTIVE.*
+*Projects are headers with indented action bullets. Take one slice at a time. An item too big to finish in ~50k tokens is a project; slice it (`Project: [parent] → [the slice]`) before it enters ACTIVE.*
 
 -
 
