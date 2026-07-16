@@ -18,7 +18,7 @@ If the session number ends in 0 or 5, invoke a subagent to run the `/project-rep
 Run `/compress` to bank the self-authored handoff note now. It works in parallel with the repair subagent when one is running.
 
 ## Step 3: Finish repair (only if Step 1 launched it)
-Wait for the repair subagent to finish before continuing. The steps below edit files repair may update or audit. Relay its report to [USER_NAME]: any kit-update result, what was auto-applied, whether a `REPAIR-REVIEW.md` is waiting.
+Wait for the repair subagent to finish before continuing. The steps below edit files repair may update or audit. Waiting means driving: check the subagent's output directly each time you resume, because its completion notice may route to your caller rather than to you. If it has stalled or died, resume it or spawn a replacement; stay in this step until repair has actually finished. Relay its report to [USER_NAME]: any kit-update result, what was auto-applied, whether a `REPAIR-REVIEW.md` is waiting.
 
 ## Step 4: Validate, prune, and advance the agenda
 In `AGENDA.md`:
@@ -41,6 +41,8 @@ Update `CLAUDE.md` only if a durable orientation fact changed this session (the 
 
 ## Step 6: Memory per the gate
 Apply the gate in `MEMORY.md` (route first, then the long-term test). Surface every write as you make it. If nothing clears the gate, say so and skip. Never create files beyond `MEMORY.md` + `feedback.md`.
+
+Any `MEMORY.md` entry written or modified must be under 250 characters. Count before saving; if over, compress the entry until it fits.
 
 Any `feedback.md` entry written or modified must be <=150 chars (content only, no number prefix), forward-posture framed, and carry no `Why:` line. Count before saving.
 

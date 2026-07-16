@@ -6,6 +6,8 @@ Plain-language notes on what changed in the kit, newest first. When the kit upda
 
 - All kit templates and skills now use plain punctuation (commas, colons, periods) instead of double dashes. Your project files stamped from older templates will be gently restamped to match at their next checkup; that is this change propagating, not something wrong.
 - Compression notes get a new heading format inside the note: `# Session NN (YYYY-MM-DD): Title`. Existing notes keep their old headings; only new notes use it.
+- Memory entries now get their 250-character limit checked at the moment they're written during wrap-up, instead of waiting for a checkup to catch oversized entries later.
+- The checkup coordinator and session wrap-up now actively shepherd their helper agents: if a helper stalls or quietly finishes, they check its output and restart it if needed, so checkups can't hang waiting on a helper that already stopped.
 
 ## July 15, 2026 update
 

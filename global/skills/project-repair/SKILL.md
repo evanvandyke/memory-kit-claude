@@ -37,6 +37,8 @@ Then proceed to Step 1. Layer 1 reconciles the kit's own files; Steps 1-3 audit 
 ## Step 1: Launch two independent auditors (Opus, parallel)
 Spin up TWO Opus subagents at once. Each audits independently; neither sees the other's work.
 
+**Drive every subagent you launch (auditors here, the review writer in Step 2) to completion.** If one stalls or dies mid-run, resume it or spawn a replacement with the same brief. Each time you resume, read the child's actual output first: its completion notice may have routed to your caller instead of you, so a child that looks "still running" may already be done. Your own run ends only when the review is written and the report is delivered, never before.
+
 Brief each identically, with the project's absolute path filled in:
 
 > **Role + hard rules.** You have zero prior context on the project at `[project path]`. You are an auditor: report findings only, modify nothing. No file you read gets edited, created, or deleted by you. Finalize from your own reading; do not call optional server-side consultation tools (e.g. advisor). The checklist is deterministic and those calls can stall your run.
