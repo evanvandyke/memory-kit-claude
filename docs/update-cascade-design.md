@@ -181,3 +181,19 @@ Then one read-only run against the real `~/.claude/` with the real kit repo as u
 6. **Tier B go-ahead** after reviewing the recovery branch, including its two reconstructed files.
 7. **Merge `recovery/session-20-live-ahead`** into main -- it becomes the reconciled anchor's foundation.
 8. **Evan's own `auto_update: true`** (dogfood) and retiring the hand-install workflow from kit-manager's CLAUDE.md.
+
+## Hardening round (2026-07-16): shipped fixes and accepted limitations
+
+Five fixes shipped this round: source pinning via the optional `update_ref` config field (tag, branch, or SHA); exit 5 for data-integrity failures while exit 3 stays benign transient; the install-only backup-manifest bug; pending-approval bookkeeping (`pending_approval` config map) so per-change files stop freezing the anchor; and a repeatable `--approve <install_to>` grant flag.
+
+Findings from the adversarial review that were deliberately accepted, not fixed. Revisit if their preconditions change:
+
+1. A clone failure is always exit 3 (transient), even when the local upstream repo is corrupt. At the clone boundary the two are indistinguishable, and real installs point at GitHub over HTTPS where failure means offline.
+2. A repo whose remote HEAD is unborn cannot be rescued by a valid `update_ref`; HEAD resolves first. Real kit repos always have a default branch.
+3. `awk` and `shasum` are not preflighted (only `git` and `python3` are). Pre-existing pattern; both ship with macOS.
+4. An unreadable (permission-broken) config exits 5 rather than 3. Judged acceptable: a permission-broken install does need human attention.
+5. A per-change file whose manifest row changes (source path or personalize flag) while awaiting approval can misclassify as diverged. Requires editing the manifest row of a gated file while a client has it pending; author-side discipline covers this.
+6. A content-changing rename of a per-change file can leave the old path live after approval. Only per-change file today is the updater itself; do not rename it casually.
+7. `pending_approval` keys ride the same TSV serialization as `declined`; keys containing tabs or newlines would corrupt on rewrite. Keys come from our own validated manifest.
+8. Machine-block rows for stable pending-approval entries report `-` for the installed-render checksum. Documented as not applicable; consumers treat `-` as absent.
+9. `bk_record` appends are unchecked (pre-existing pattern throughout the script). A failed append after a successful install would drop that entry from undo coverage.

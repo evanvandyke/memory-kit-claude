@@ -153,6 +153,111 @@ cat > "$R2/install-manifest.json" <<'EOF'
 EOF
 git -C "$R2" add -A && gitc "$R2" -m "schema2"
 
+# -------------------------------------------------- malformed manifest fixture repo
+R4="$WORK/upstream-malformed"
+mkdir -p "$R4/files"
+git -C "$WORK" init -q upstream-malformed
+printf 'valid first version\n' > "$R4/files/one.md"
+cat > "$R4/install-manifest.json" <<'EOF'
+{ "kit": "memory-kit-claude", "manifest_schema": 1,
+  "files": [ { "source": "files/one.md", "install_to": "notes/one.md", "type": "copied", "personalize": false, "owner": "kit" } ] }
+EOF
+git -C "$R4" add -A && gitc "$R4" -m "valid manifest"
+R4C1=$(git -C "$R4" rev-parse HEAD)
+printf '{"kit": "memory-kit-claude", "files": [' > "$R4/install-manifest.json"
+git -C "$R4" add -A && gitc "$R4" -m "malformed manifest"
+
+# ---------------------------------------------------------- pinned release fixture repo
+RP="$WORK/upstream-pinned"
+mkdir -p "$RP/files"
+git -C "$WORK" init -q upstream-pinned
+printf 'selected file version one\n' > "$RP/files/selected.md"
+printf 'later file stays stable\n' > "$RP/files/later.md"
+cat > "$RP/install-manifest.json" <<'EOF'
+{ "kit": "memory-kit-claude", "manifest_schema": 1,
+  "files": [
+    { "source": "files/selected.md", "install_to": "notes/selected.md", "type": "copied", "personalize": false, "owner": "kit" },
+    { "source": "files/later.md", "install_to": "notes/later.md", "type": "copied", "personalize": false, "owner": "kit" }
+  ] }
+EOF
+printf 'Pinned release history\n' > "$RP/CHANGELOG.md"
+git -C "$RP" add -A && gitc "$RP" -m "pinned baseline"
+RP1=$(git -C "$RP" rev-parse HEAD)
+printf 'selected file version two\n' > "$RP/files/selected.md"
+printf 'Tested release selected file update\n' >> "$RP/CHANGELOG.md"
+git -C "$RP" add -A && gitc "$RP" -m "tested release"
+RP2=$(git -C "$RP" rev-parse HEAD)
+git -C "$RP" tag tested-release
+git -C "$RP" branch tested-branch "$RP2"
+printf 'later file changed after the tested release\n' > "$RP/files/later.md"
+printf 'Post release later file update\n' >> "$RP/CHANGELOG.md"
+git -C "$RP" add -A && gitc "$RP" -m "newer unselected work"
+RP3=$(git -C "$RP" rev-parse HEAD)
+
+pin_home() { # home update_ref
+  mkdir -p "$1/notes"
+  git -C "$RP" show "$RP1:files/selected.md" > "$1/notes/selected.md"
+  git -C "$RP" show "$RP1:files/later.md" > "$1/notes/later.md"
+  write_config "$1" "$RP1" "$RP" "Evan"
+  python3 -c 'import json,sys
+p=sys.argv[1]
+d=json.load(open(p))
+d["update_ref"]=sys.argv[2]
+open(p,"w").write(json.dumps(d,indent=2)+"\n")' "$1/kit-config/memory-kit-claude.json" "$2"
+}
+
+# ------------------------------------------------ pending approval fixture repo
+RD="$WORK/upstream-pending"
+mkdir -p "$RD/files"
+git -C "$WORK" init -q upstream-pending
+printf '#!/bin/sh\necho approval-v1\n' > "$RD/files/gated.sh"
+printf 'ordinary version one\n' > "$RD/files/ordinary.md"
+printf 'removed upstream later\n' > "$RD/files/removed.md"
+cat > "$RD/install-manifest.json" <<'EOF'
+{ "kit": "memory-kit-claude", "manifest_schema": 1,
+  "files": [
+    { "source": "files/gated.sh", "install_to": "kit-scripts/kit-update-check.sh", "type": "copied", "personalize": false, "owner": "kit", "mode": "755", "consent": "per-change" },
+    { "source": "files/ordinary.md", "install_to": "notes/ordinary.md", "type": "copied", "personalize": false, "owner": "kit" },
+    { "source": "files/removed.md", "install_to": "notes/removed.md", "type": "copied", "personalize": false, "owner": "kit" },
+    { "source": null, "install_to": "notes/retired.md", "type": "copied", "personalize": false, "owner": "kit", "retired": { "date": "2026-07-16" } }
+  ] }
+EOF
+printf 'Pending approval history\n' > "$RD/CHANGELOG.md"
+git -C "$RD" add -A && gitc "$RD" -m "pre-removal baseline"
+RD0=$(git -C "$RD" rev-parse HEAD)
+git -C "$RD" rm -q files/removed.md
+python3 -c 'import json,sys
+p=sys.argv[1]
+d=json.load(open(p))
+d["files"]=[e for e in d["files"] if e["install_to"]!="notes/removed.md"]
+open(p,"w").write(json.dumps(d,indent=2)+"\n")' "$RD/install-manifest.json"
+git -C "$RD" add -A && gitc "$RD" -m "pending baseline"
+RD1=$(git -C "$RD" rev-parse HEAD)
+printf '#!/bin/sh\necho approval-v2\n' > "$RD/files/gated.sh"
+printf '#!/bin/sh\necho new-approval\n' > "$RD/files/new-gated.sh"
+python3 -c 'import json,sys
+p=sys.argv[1]
+d=json.load(open(p))
+d["files"].append({"source":"files/new-gated.sh","install_to":"kit-scripts/new-gated.sh","type":"copied","personalize":False,"owner":"kit","mode":"755","consent":"per-change"})
+open(p,"w").write(json.dumps(d,indent=2)+"\n")' "$RD/install-manifest.json"
+printf 'Gated file update\n' >> "$RD/CHANGELOG.md"
+git -C "$RD" add -A && gitc "$RD" -m "gated change"
+RD2=$(git -C "$RD" rev-parse HEAD)
+printf 'ordinary version two\n' > "$RD/files/ordinary.md"
+printf 'Later ordinary update\n' >> "$RD/CHANGELOG.md"
+git -C "$RD" add -A && gitc "$RD" -m "later unrelated change"
+RD3=$(git -C "$RD" rev-parse HEAD)
+
+pending_home() {
+  mkdir -p "$1/kit-scripts" "$1/notes"
+  git -C "$RD" show "$RD1:files/gated.sh" > "$1/kit-scripts/kit-update-check.sh"
+  chmod 755 "$1/kit-scripts/kit-update-check.sh"
+  git -C "$RD" show "$RD1:files/ordinary.md" > "$1/notes/ordinary.md"
+  git -C "$RD" show "$RD3:files/new-gated.sh" > "$1/kit-scripts/new-gated.sh"
+  chmod 755 "$1/kit-scripts/new-gated.sh"
+  write_config "$1" "$RD1" "$RD" "Evan"
+}
+
 # --------------------------------------------- no-changelog / updates-only fixture repo
 R3="$WORK/upstream-nochangelog"
 mkdir -p "$R3/files"
@@ -215,6 +320,7 @@ assert_eq "in-sync: epsilon state"                      "in-sync" "$(state_of "$
 assert_eq "in-sync: retired old absent"                 "retired-absent" "$(state_of "$REPORT" skills/old/SKILL.md)"
 assert_eq "generated-all-sections: CLAUDE.md ok"        "generated-ok" "$(state_of "$REPORT" CLAUDE.md)"
 assert_grep "changelog: no delta when anchored at HEAD" "No new changelog lines" "$REPORT"
+assert_grep "report: exit legend names code 5"           "5 kit data needs attention" "$REPORT"
 
 # ============================================== 2. baseline mixed home (anchor C1)
 H="$WORK/h-baseline"; mkdir -p "$H"; home_baseline "$H"
@@ -342,8 +448,19 @@ assert_eq "declined-then-changed-again: alpha re-prompts as kit-ahead" "kit-ahea
 H="$WORK/h-schema"; mkdir -p "$H"
 write_config "$H" "$R2C1" "$R2" "Evan"
 run_check "$H" "$R2"
-assert_eq "schema-too-new: exit code 3" "3" "$RC"
+assert_eq "schema-too-new: exit code 5" "5" "$RC"
 assert_grep "schema-too-new: says update the updater first" "pdate the updater first" "$OUT"
+
+H="$WORK/h-malformed"; mkdir -p "$H"
+write_config "$H" "$R4C1" "$R4" "Evan"
+run_check "$H" "$R4"
+assert_eq "malformed-head: exit code 5" "5" "$RC"
+assert_grep "malformed-head: message names malformed manifest" "malformed" "$OUT"
+
+H="$WORK/h-unreachable"; mkdir -p "$H"; home_baseline "$H"
+run_check "$H" "$WORK/upstream-does-not-exist"
+assert_eq "unreachable-upstream: exit code 3" "3" "$RC"
+assert_grep "unreachable-upstream: message says the check failed" "Couldn't check" "$OUT"
 
 # ======================================================================== 17. locking
 H="$WORK/h-lockfresh"; mkdir -p "$H"; home_baseline "$H"
@@ -403,14 +520,14 @@ assert_grep "changelog-absent: report says so"            "No CHANGELOG.md at HE
 H="$WORK/h-noname"; mkdir -p "$H"; home_baseline "$H"
 python3 -c "import json; open('$H/kit-config/memory-kit-claude.json','w').write(json.dumps({'kit':'memory-kit-claude','installed_commit':'$C1','update_source':'$REPO','auto_update':True}))"
 run_check "$H" "$REPO"
-assert_eq "missing-user-name: exit code 3"                       "3" "$RC"
+assert_eq "missing-user-name: exit code 5"                       "5" "$RC"
 assert_grep "missing-user-name: message names the missing field" "user_name" "$OUT"
 assert_grep "missing-user-name: message names the config path"   "kit-config/memory-kit-claude.json" "$OUT"
 
 H="$WORK/h-emptyname"; mkdir -p "$H"; home_baseline "$H"
 write_config "$H" "$C1" "$REPO" ""
 run_check "$H" "$REPO"
-assert_eq "empty-user-name: exit code 3" "3" "$RC"
+assert_eq "empty-user-name: exit code 5" "5" "$RC"
 
 # ============================================== 22. unwritable/nonexistent report path
 H="$WORK/h-badreport"; mkdir -p "$H"; home_baseline "$H"
@@ -453,6 +570,227 @@ cfg={"kit":"memory-kit-claude","installed_commit":sys.argv[2],
 open(sys.argv[1],"w").write(json.dumps(cfg,indent=2))' \
     "$1/kit-config/memory-kit-claude.json" "$2" "$3" "$4" "$5"
 }
+
+# ===================================== source pinning selects the configured release
+H="$WORK/h-pinned"; mkdir -p "$H"; pin_home "$H" "tested-release"
+run_check "$H" "$RP" --apply
+assert_eq "pinned: apply exits 0" "0" "$RC"
+git -C "$RP" show "$RP2:files/selected.md" > "$WORK/want-pinned-selected.md"
+if cmp -s "$H/notes/selected.md" "$WORK/want-pinned-selected.md"; then
+  ok "pinned: selected release update applied"
+else
+  bad "pinned: selected release update applied" "selected file does not match the tag"
+fi
+assert_eq "pinned: later upstream change remains in-sync" "in-sync" "$(state_of "$REPORT" notes/later.md)"
+git -C "$RP" show "$RP1:files/later.md" > "$WORK/want-pinned-later.md"
+if cmp -s "$H/notes/later.md" "$WORK/want-pinned-later.md"; then
+  ok "pinned: later upstream bytes ignored"
+else
+  bad "pinned: later upstream bytes ignored" "live file took changes after the tag"
+fi
+assert_eq "pinned: anchor advances to the tagged commit" "$RP2" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+assert_grep "pinned: report names the configured ref" "update_ref: tested-release" "$REPORT"
+assert_grep "pinned: report names the resolved commit" "resolved_commit: $RP2" "$REPORT"
+
+H="$WORK/h-bad-pin"; mkdir -p "$H"; pin_home "$H" "release-that-does-not-exist"
+sweep "$H" > "$WORK/sweep-bad-pin-before.txt"
+run_check "$H" "$RP" --apply
+sweep "$H" > "$WORK/sweep-bad-pin-after.txt"
+assert_eq "bad-pin: unresolved ref exits 5" "5" "$RC"
+assert_grep "bad-pin: message names the ref" "release-that-does-not-exist" "$OUT"
+if diff -q "$WORK/sweep-bad-pin-before.txt" "$WORK/sweep-bad-pin-after.txt" >/dev/null; then
+  ok "bad-pin: unresolved ref writes nothing"
+else
+  bad "bad-pin: unresolved ref writes nothing" "home contents changed"
+fi
+
+H="$WORK/h-pinned-branch"; mkdir -p "$H"; pin_home "$H" "tested-branch"
+run_check "$H" "$RP" --apply
+assert_eq "branch-pin: nondefault branch resolves" "0" "$RC"
+assert_eq "branch-pin: anchor advances to the branch commit" "$RP2" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+assert_eq "branch-pin: later upstream change remains in-sync" "in-sync" "$(state_of "$REPORT" notes/later.md)"
+assert_grep "branch-pin: report names the configured branch" "update_ref: tested-branch" "$REPORT"
+
+# ============================= an exact decline stays declined during apply
+H="$WORK/h-declined-per-change"; mkdir -p "$H"; pending_home "$H"
+run_check "$H" "$RD" --apply
+python3 -c 'import json,sys
+p=sys.argv[1]
+d=json.load(open(p))
+d["declined"]={"kit-scripts/kit-update-check.sh":sys.argv[2]}
+open(p,"w").write(json.dumps(d,indent=2)+"\n")' "$H/kit-config/memory-kit-claude.json" "$RD3"
+run_check "$H" "$RD" --apply
+assert_eq "declined-per-change: state remains declined" "declined-pending" "$(state_of "$REPORT" kit-scripts/kit-update-check.sh)"
+DECLINED_SHA=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("declined",{}).get("kit-scripts/kit-update-check.sh",""))' "$H/kit-config/memory-kit-claude.json")
+assert_eq "declined-per-change: decline record survives" "$RD3" "$DECLINED_SHA"
+PENDING_SHA=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("pending_approval",{}).get("kit-scripts/kit-update-check.sh",""))' "$H/kit-config/memory-kit-claude.json")
+assert_eq "declined-per-change: no pending approval record appears" "" "$PENDING_SHA"
+if grep -q "individual approval" "$REPORT"; then
+  bad "declined-per-change: report does not ask again" "approval request found"
+else
+  ok "declined-per-change: report does not ask again"
+fi
+
+# ========================== a declined new per-change file stays absent
+H="$WORK/h-declined-new"; mkdir -p "$H"; pending_home "$H"
+cp "$RD/files/gated.sh" "$H/kit-scripts/kit-update-check.sh"
+chmod 755 "$H/kit-scripts/kit-update-check.sh"
+cp "$RD/files/ordinary.md" "$H/notes/ordinary.md"
+rm "$H/kit-scripts/new-gated.sh"
+python3 -c 'import json,sys
+p=sys.argv[1]
+d=json.load(open(p))
+d["declined"]={"kit-scripts/new-gated.sh":sys.argv[2]}
+open(p,"w").write(json.dumps(d,indent=2)+"\n")' "$H/kit-config/memory-kit-claude.json" "$RD3"
+run_check "$H" "$RD" --apply
+assert_eq "declined-new: state remains declined" "declined-pending" "$(state_of "$REPORT" kit-scripts/new-gated.sh)"
+if grep -q "individual approval" "$REPORT"; then
+  bad "declined-new: report does not request approval" "approval request found"
+else
+  ok "declined-new: report does not request approval"
+fi
+
+# ======================= approval with automatic updates off is narrowly scoped
+H="$WORK/h-approve-auto-off"; mkdir -p "$H"; pending_home "$H"
+python3 -c 'import json,sys
+p=sys.argv[1]
+d=json.load(open(p))
+d["auto_update"]=False
+d["installed_commit"]=sys.argv[2]
+open(p,"w").write(json.dumps(d,indent=2)+"\n")' "$H/kit-config/memory-kit-claude.json" "$RD0"
+printf 'retired file must stay live\n' > "$H/notes/retired.md"
+printf 'removed upstream file must stay live\n' > "$H/notes/removed.md"
+run_check "$H" "$RD" --approve kit-scripts/kit-update-check.sh
+if cmp -s "$H/kit-scripts/kit-update-check.sh" "$RD/files/gated.sh"; then
+  ok "approve-auto-off: approved file changed"
+else
+  bad "approve-auto-off: approved file changed" "approved bytes differ"
+fi
+git -C "$RD" show "$RD1:files/ordinary.md" > "$WORK/want-auto-off-ordinary.md"
+if cmp -s "$H/notes/ordinary.md" "$WORK/want-auto-off-ordinary.md"; then
+  ok "approve-auto-off: other kit update stayed unchanged"
+else
+  bad "approve-auto-off: other kit update stayed unchanged" "ordinary file changed"
+fi
+if printf 'retired file must stay live\n' | cmp -s - "$H/notes/retired.md"; then
+  ok "approve-auto-off: retired file stayed live"
+else
+  bad "approve-auto-off: retired file stayed live" "retired file moved or changed"
+fi
+if printf 'removed upstream file must stay live\n' | cmp -s - "$H/notes/removed.md"; then
+  ok "approve-auto-off: removed upstream file stayed live"
+else
+  bad "approve-auto-off: removed upstream file stayed live" "removed upstream file moved or changed"
+fi
+assert_eq "approve-auto-off: anchor stays at the installed commit" "$RD0" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+BK=$(newest_backup "$H")
+if grep -q $'^updated\tkit-scripts/kit-update-check.sh$' "$H/kit-backups/$BK/.kit-backup-manifest.tsv" 2>/dev/null &&
+   ! grep -q $'notes/ordinary.md\|notes/retired.md\|notes/removed.md' "$H/kit-backups/$BK/.kit-backup-manifest.tsv" 2>/dev/null; then
+  ok "approve-auto-off: backup manifest records only the approved file"
+else
+  bad "approve-auto-off: backup manifest records only the approved file" "another file action was recorded"
+fi
+
+# ================================== pending approval stays stable across later commits
+H="$WORK/h-pending"; mkdir -p "$H"; pending_home "$H"
+run_check "$H" "$RD" --apply
+assert_eq "pending: apply exits 1" "1" "$RC"
+assert_eq "pending: gated file awaits approval" "pending-approval" "$(state_of "$REPORT" kit-scripts/kit-update-check.sh)"
+assert_grep "pending: report explains the approval wait" "awaiting your individual approval" "$REPORT"
+assert_grep "pending: approval wait appears under needs attention" "## Needs your attention" "$REPORT"
+assert_eq "pending: anchor advances past unrelated commits" "$RD3" "$(cfg_commit "$H/kit-config/memory-kit-claude.json")"
+PENDING_SHA=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("pending_approval",{}).get("kit-scripts/kit-update-check.sh",""))' "$H/kit-config/memory-kit-claude.json")
+assert_eq "pending: config records the live render commit" "$RD1" "$PENDING_SHA"
+git -C "$RD" show "$RD3:files/ordinary.md" > "$WORK/want-ordinary-v2.md"
+if cmp -s "$H/notes/ordinary.md" "$WORK/want-ordinary-v2.md"; then
+  ok "pending: unrelated ordinary update applied"
+else
+  bad "pending: unrelated ordinary update applied" "ordinary file did not update"
+fi
+BK=$(newest_backup "$H")
+if grep -q $'^updated\tkit-config/memory-kit-claude.json$' "$H/kit-backups/$BK/.kit-backup-manifest.tsv" 2>/dev/null; then
+  ok "pending: config change follows backup discipline"
+else
+  bad "pending: config change follows backup discipline" "config backup record missing"
+fi
+CONFIG_BEFORE=$(shasum -a 256 "$H/kit-config/memory-kit-claude.json" | awk '{print $1}')
+run_check "$H" "$RD"
+assert_eq "pending-later: dry run exits 1" "1" "$RC"
+assert_eq "pending-later: state remains pending approval" "pending-approval" "$(state_of "$REPORT" kit-scripts/kit-update-check.sh)"
+assert_eq "pending-later: dry run leaves config unchanged" "$CONFIG_BEFORE" "$(shasum -a 256 "$H/kit-config/memory-kit-claude.json" | awk '{print $1}')"
+
+# ====================================== individual approval applies and remains undoable
+git -C "$RD" show "$RD1:files/gated.sh" > "$WORK/want-approved-old.sh"
+git -C "$RD" show "$RD3:files/gated.sh" > "$WORK/want-approved-new.sh"
+run_check "$H" "$RD" --approve kit-scripts/kit-update-check.sh
+assert_eq "approve: run exits 0" "0" "$RC"
+assert_eq "approve: applied action records individual approval" "individually-approved" "$(applied_of "$REPORT" kit-scripts/kit-update-check.sh)"
+assert_grep "approve: report uses individual approval wording" "individually approved" "$REPORT"
+if cmp -s "$H/kit-scripts/kit-update-check.sh" "$WORK/want-approved-new.sh"; then
+  ok "approve: updater script receives the selected version"
+else
+  bad "approve: updater script receives the selected version" "approved bytes differ"
+fi
+PENDING_SHA=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("pending_approval",{}).get("kit-scripts/kit-update-check.sh",""))' "$H/kit-config/memory-kit-claude.json")
+assert_eq "approve: pending record cleared" "" "$PENDING_SHA"
+BK=$(newest_backup "$H")
+if cmp -s "$H/kit-backups/$BK/kit-scripts/kit-update-check.sh" "$WORK/want-approved-old.sh"; then
+  ok "approve: previous updater version backed up"
+else
+  bad "approve: previous updater version backed up" "backup missing or changed"
+fi
+run_check "$H" "$RD" --undo
+assert_eq "approve: undo exits 0" "0" "$RC"
+if cmp -s "$H/kit-scripts/kit-update-check.sh" "$WORK/want-approved-old.sh"; then
+  ok "approve: undo restores the previous updater version"
+else
+  bad "approve: undo restores the previous updater version" "restored bytes differ"
+fi
+PENDING_SHA=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("pending_approval",{}).get("kit-scripts/kit-update-check.sh",""))' "$H/kit-config/memory-kit-claude.json")
+assert_eq "approve: undo restores the pending record" "$RD1" "$PENDING_SHA"
+cp "$WORK/want-approved-new.sh" "$H/kit-scripts/kit-update-check.sh"
+chmod 755 "$H/kit-scripts/kit-update-check.sh"
+run_check "$H" "$RD" --apply
+assert_eq "pending-current: apply exits 0" "0" "$RC"
+PENDING_SHA=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("pending_approval",{}).get("kit-scripts/kit-update-check.sh",""))' "$H/kit-config/memory-kit-claude.json")
+assert_eq "pending-current: current file clears its pending record" "" "$PENDING_SHA"
+
+# =========================== approval config failure is operational and recoverable
+H="$WORK/h-approve-config-fail"; mkdir -p "$H"; pending_home "$H"
+run_check "$H" "$RD" --apply
+CONFIG_BEFORE=$(shasum -a 256 "$H/kit-config/memory-kit-claude.json" | awk '{print $1}')
+TESTN=$((TESTN+1)); REPORT="$WORK/report-$TESTN.md"; OUT="$WORK/out-$TESTN.txt"
+KUC_TEST_FAIL_CONFIG_WRITE=1 bash "$SCRIPT" --home "$H" --upstream "$RD" --report "$REPORT" --approve kit-scripts/kit-update-check.sh > "$OUT" 2>&1
+RC=$?
+assert_eq "approve-config-fail: exits 3" "3" "$RC"
+if cmp -s "$H/kit-scripts/kit-update-check.sh" "$RD/files/gated.sh"; then
+  ok "approve-config-fail: approved file was installed"
+else
+  bad "approve-config-fail: approved file was installed" "approved bytes differ"
+fi
+assert_eq "approve-config-fail: config remains unchanged" "$CONFIG_BEFORE" "$(shasum -a 256 "$H/kit-config/memory-kit-claude.json" | awk '{print $1}')"
+PENDING_SHA=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("pending_approval",{}).get("kit-scripts/kit-update-check.sh",""))' "$H/kit-config/memory-kit-claude.json")
+assert_eq "approve-config-fail: pending record remains for reconciliation" "$RD1" "$PENDING_SHA"
+assert_grep "approve-config-fail: report names the config failure" "config write failed" "$REPORT"
+assert_grep "approve-config-fail: report promises reconciliation" "next run will reconcile" "$REPORT"
+
+H="$WORK/h-approve-unknown"; mkdir -p "$H"; pending_home "$H"
+sweep "$H" > "$WORK/sweep-approve-unknown-before.txt"
+run_check "$H" "$RD" --approve notes/not-in-the-manifest.md
+sweep "$H" > "$WORK/sweep-approve-unknown-after.txt"
+assert_eq "approve-unknown: exits 3" "3" "$RC"
+assert_grep "approve-unknown: message names the path" "notes/not-in-the-manifest.md" "$OUT"
+if diff -q "$WORK/sweep-approve-unknown-before.txt" "$WORK/sweep-approve-unknown-after.txt" >/dev/null && [ ! -d "$H/kit-backups" ]; then
+  ok "approve-unknown: writes nothing"
+else
+  bad "approve-unknown: writes nothing" "home contents or backups changed"
+fi
+run_check "$H" "$RD" --approve notes/ordinary.md
+assert_eq "approve-ordinary: non-gated entry exits 3" "3" "$RC"
+assert_grep "approve-ordinary: message explains no approval is required" "does not require individual approval" "$OUT"
+run_check "$H" "$RD" --approve kit-scripts/kit-update-check.sh --undo
+assert_eq "approve-undo: exits 3" "3" "$RC"
+assert_grep "approve-undo: message names both flags" "cannot be used with --undo" "$OUT"
 
 # ----------------------------------------------------------- apply fixture repo
 # A1: baseline manifest. A2 (HEAD): a + user + exec change, zr renamed,
@@ -642,6 +980,45 @@ else
   bad "apply-missing: b reinstalled with correct content" "missing or differs"
 fi
 assert_eq "apply-missing: recorded as installed (no prior file)" "installed" "$(applied_of "$REPORT" skills/b/SKILL.md)"
+
+# =========================== A3b. new installs are recorded and can be undone
+H="$WORK/h-apply-new-only"; mkdir -p "$H"; apply_home_clean "$H"
+git -C "$RA" show "$A2:files/a.md" > "$WORK/tmp.src" && render_py "$WORK/tmp.src" "Evan" > "$H/skills/a/SKILL.md"
+mv "$H/notes/zr-old.md" "$H/notes/zr.md"
+git -C "$RA" show "$A2:files/locked.md" > "$H/notes/locked.md"
+chmod 600 "$H/notes/locked.md"
+rm "$H/skills/b/SKILL.md"
+TESTN=$((TESTN+1)); REPORT="$WORK/report-$TESTN.md"; OUT="$WORK/out-$TESTN.txt"; ERR="$WORK/err-$TESTN.txt"
+bash "$SCRIPT" --home "$H" --upstream "$RA" --report "$REPORT" --apply > "$OUT" 2> "$ERR"
+RC=$?
+assert_eq "new-only: apply exits 0" "0" "$RC"
+assert_eq "new-only: apply stderr is empty" "0" "$(wc -c < "$ERR" | tr -d '[:space:]')"
+BK=$(newest_backup "$H")
+if [ -n "$BK" ] && [ -f "$H/kit-backups/$BK/.kit-backup-manifest.tsv" ]; then
+  ok "new-only: backup directory and manifest created"
+else
+  bad "new-only: backup directory and manifest created" "backup manifest missing"
+fi
+if grep -q $'^installed\tskills/b/SKILL.md$' "$H/kit-backups/$BK/.kit-backup-manifest.tsv" 2>/dev/null &&
+   grep -q $'^installed\tskills/eps/SKILL.md$' "$H/kit-backups/$BK/.kit-backup-manifest.tsv" 2>/dev/null; then
+  ok "new-only: manifest records every install"
+else
+  bad "new-only: manifest records every install" "one or more install records missing"
+fi
+run_check "$H" "$RA" --undo
+assert_eq "new-only: undo exits 0" "0" "$RC"
+if [ ! -e "$H/skills/b/SKILL.md" ] && [ ! -e "$H/skills/eps/SKILL.md" ]; then
+  ok "new-only: undo removes installed files from the live home"
+else
+  bad "new-only: undo removes installed files from the live home" "one or more installed files remain live"
+fi
+UNDO_BK=$(newest_backup "$H")
+if cmp -s "$H/kit-backups/$UNDO_BK/skills/b/SKILL.md" "$RA/files/b.md" &&
+   cmp -s "$H/kit-backups/$UNDO_BK/skills/eps/SKILL.md" "$RA/files/eps.md"; then
+  ok "new-only: undo moves installed files into its own backup"
+else
+  bad "new-only: undo moves installed files into its own backup" "moved copies missing or changed"
+fi
 
 # =================================== A4. live-ahead / diverged never written
 H="$WORK/h-apply-protected"; mkdir -p "$H"; apply_home "$H"

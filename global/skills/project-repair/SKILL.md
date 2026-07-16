@@ -31,6 +31,8 @@ Run the script. When it finishes it returns a number (the exit code) that tells 
 - **1: updates are available.** Read `auto_update` in the config. If it is `true`, apply them: re-run the same command with `--apply` added, then read the assembled changelog lines from the report and relay them to [USER_NAME] in plain language: what changed, that a backup was made first, and that "undo the last kit update" reverses it. Anything the report marks as needing individual approval (such as the updater script itself) waits for [USER_NAME]'s explicit yes. If `auto_update` is `false`, tell [USER_NAME] that improvements are available and automatic updates are off, and that they can turn them on by saying "turn on auto-updates." Apply nothing.
 - **2: escalations are present** (a file changed on both sides, or something needs a human). Surface these to [USER_NAME] alongside the repair review below; never auto-apply them.
 - **3: the check couldn't run** (no connection, or an update is already in progress). Say one calm sentence: "I couldn't check for kit updates this time; your project checkup still ran." Continue to Step 1. Never halt the repair over this.
+- **4: the kit config is missing, setup never completed or was removed; tell [USER_NAME] plainly and continue the checkup.**
+- **5: the kit's own data looks corrupt or the pinned version cannot be found; do not apply anything, surface it to [USER_NAME] as needing attention, and continue the project checkup.**
 
 Then proceed to Step 1. Layer 1 reconciles the kit's own files; Steps 1-3 audit this project. When running as a subagent, fold these update outcomes into the Step 3 report instead of addressing [USER_NAME] directly.
 

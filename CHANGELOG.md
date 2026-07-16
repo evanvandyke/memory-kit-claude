@@ -4,6 +4,11 @@ Plain-language notes on what changed in the kit, newest first. When the kit upda
 
 ## July 16, 2026 update
 
+- Kit installs can now pin updates to a tested release instead of always taking the newest changes.
+- Undo now covers brand new files added by an update, preserving them in a backup when it removes them from the live install.
+- Update results now clearly distinguish between a check that could not run this time and kit data that needs your attention.
+- Files awaiting your individual approval no longer make later checkups look alarming.
+- You can now approve an individually gated file with a single command.
 - All kit templates and skills now use plain punctuation (commas, colons, periods) instead of double dashes. Your project files stamped from older templates will be gently restamped to match at their next checkup; that is this change propagating, not something wrong.
 - Compression notes get a new heading format inside the note: `# Session NN (YYYY-MM-DD): Title`. Existing notes keep their old headings; only new notes use it.
 - Memory entries now get their 250-character limit checked at the moment they're written during wrap-up, instead of waiting for a checkup to catch oversized entries later.

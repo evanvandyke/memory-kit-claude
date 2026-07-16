@@ -26,11 +26,11 @@
 # dir. Retired entries found live are MOVED to <home>/kit-retired/<date>/
 # (a move, never a delete). NEVER written, even with --apply: user-owned
 # entries; live-ahead / diverged / conflict states; entries with
-# consent: per-change (reported as "needs individual approval"); and
-# everything when auto_update is false (the report lists what WOULD apply,
+# consent: per-change unless named by --approve; and
+# everything else when auto_update is false (the report lists what WOULD apply,
 # with the Replace/Keep vocabulary). installed_commit advances ONLY at the
 # very end, written once via sidecar+mv, and only if every copied entry then
-# matches render(HEAD) (or is retired-absent / declined) -- so a crash
+# matches render(HEAD) (or is retired-absent / declined / pending approval), so a crash
 # mid-run leaves the anchor in place and the next run self-heals.
 #
 # UNDO (--undo): restores every file recorded in the NEWEST
@@ -40,7 +40,8 @@
 # moved to <home>/kit-retired/ are not covered by undo; they stay put.
 #
 # USAGE:
-#   kit-update-check.sh --home <dir> [--apply] [--config <path>]
+#   kit-update-check.sh --home <dir> [--apply] [--approve <install_to>]...
+#                       [--config <path>]
 #                       [--upstream <url-or-path>] [--report <path>]
 #   kit-update-check.sh --undo --home <dir> [--report <path>]
 #
@@ -50,11 +51,19 @@
 #                      default: the script never touches a home you did not
 #                      name explicitly.
 #   --apply            Apply eligible updates (see APPLY MODE above).
+#   --approve <path>   Individually approve one per-change entry. Repeatable.
+#                      Implies --apply and cannot be combined with --undo.
 #   --undo             Restore from the newest backup dir (see UNDO above).
 #   --config <path>    Kit config JSON. Default: <home>/kit-config/memory-kit-claude.json
 #   --upstream <u>     Git URL or local path of the kit repo; overrides the
 #                      config's update_source. Local paths are cloned via file://.
 #   --report <path>    Where to write the markdown report. Default: ./kit-update-report.md
+#
+# CONFIG FIELDS:
+#   update_ref          Optional tag, branch, or commit SHA to use instead of
+#                       the update source's remote HEAD.
+#   pending_approval    Map of install paths to commits whose rendered bytes
+#                       are waiting for individual approval.
 #
 # EXIT CODES (same meanings with or without --apply):
 #   0  all entries in-sync / nothing left to do
@@ -62,18 +71,17 @@
 #      UNAPPLIED (auto_update is false, or per-change consent is pending)
 #   2  escalations present (live-ahead / diverged / conflict / removed-upstream /
 #      retired-present / failed generated check) -- a human needs to look
-#   3  error: clone failed, invalid or unreadable manifest, manifest_schema
-#      newer than this script understands ("update the updater first"),
-#      bad arguments, missing/empty user_name when the manifest has
-#      personalize:true entries, report path unwritable, another update
-#      already holds the lock, or --undo with no backups to restore
+#   3  operational error: the check could not run this time because of a
+#      transient problem, a missing tool, an unwritable report, or bad usage
 #   4  no kit config found -- this install predates the update system; the
 #      adoption offer text is printed and nothing is written
+#   5  data integrity error: kit or config data is malformed, cannot be
+#      validated, uses a newer schema, or could cause files to be misclassified
 #
 # States emitted in the machine-readable report section:
 #   in-sync, kit-ahead, already-current, live-ahead, diverged, new, missing,
 #   conflict, removed-upstream, retired-present, retired-absent,
-#   generated-ok, generated-failed, declined-pending
+#   generated-ok, generated-failed, declined-pending, pending-approval
 #
 # Requires: git, python3 (JSON parsing), shasum, awk. Runs under macOS
 # /bin/bash 3.2 (no associative arrays, no bash-4-isms).
@@ -89,6 +97,8 @@ UPSTREAM_OVERRIDE=""
 REPORT="./kit-update-report.md"
 APPLY=0
 UNDO=0
+APPROVE_N=0
+APPROVE_PATHS=()
 
 usage() { awk 'NR>1 && /^#/ { sub(/^# ?/,""); print; next } NR>1 { exit }' "$0"; }
 
@@ -99,12 +109,26 @@ while [ $# -gt 0 ]; do
     --upstream) UPSTREAM_OVERRIDE="$2"; shift 2 ;;
     --report)   REPORT="$2"; shift 2 ;;
     --apply)    APPLY=1; shift ;;
+    --approve)
+      if [ $# -lt 2 ]; then
+        echo "kit-update-check: --approve requires an install path." >&2
+        exit 3
+      fi
+      APPROVE_PATHS[${#APPROVE_PATHS[@]}]="$2"
+      APPROVE_N=$((APPROVE_N+1))
+      APPLY=1
+      shift 2
+      ;;
     --undo)     UNDO=1; shift ;;
     -h|--help)  usage; exit 0 ;;
     *) echo "kit-update-check: unknown argument: $1" >&2; exit 3 ;;
   esac
 done
 
+if [ "$APPROVE_N" -gt 0 ] && [ "$UNDO" = "1" ]; then
+  echo "kit-update-check: --approve cannot be used with --undo." >&2
+  exit 3
+fi
 if [ "$APPLY" = "1" ] && [ "$UNDO" = "1" ]; then
   echo "kit-update-check: --apply and --undo are mutually exclusive." >&2
   exit 3
@@ -119,6 +143,14 @@ if [ ! -d "$HOME_DIR" ]; then
   exit 3
 fi
 [ -n "$CONFIG" ] || CONFIG="$HOME_DIR/kit-config/$KIT_NAME.json"
+
+is_approved() {
+  ia_path="$1"
+  for ia_approved in "${APPROVE_PATHS[@]}"; do
+    [ "$ia_approved" = "$ia_path" ] && return 0
+  done
+  return 1
+}
 
 # --------------------------------------------- shared scratch / lock / write machinery
 SCRATCH=""
@@ -469,13 +501,27 @@ print(v if isinstance(v,str) else "")' "$CONFIG" "$1" 2>/dev/null
 
 CFG_INSTALLED=$(cfg_field installed_commit) || true
 CFG_SOURCE=$(cfg_field update_source)
+CFG_UPDATE_REF=$(cfg_field update_ref)
 USER_NAME=$(cfg_field user_name)
 CFG_AUTO=$(python3 -c 'import json,sys
 d=json.load(open(sys.argv[1]))
 print("true" if d.get("auto_update") is True else "false")' "$CONFIG" 2>/dev/null)
 if ! python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$CONFIG" 2>/dev/null; then
   echo "kit-update-check: config at $CONFIG is not valid JSON." >&2
-  exit 3
+  exit 5
+fi
+if ! python3 -c 'import json,sys
+d=json.load(open(sys.argv[1]))
+if not isinstance(d,dict): sys.exit(1)
+for key in ("kit","installed_commit","installed_at","update_source","update_ref","user_name"):
+    if key in d and not isinstance(d[key],str): sys.exit(2)
+if "auto_update" in d and not isinstance(d["auto_update"],bool): sys.exit(3)
+for key in ("declined","pending_approval"):
+    value=d.get(key,{})
+    if not isinstance(value,dict): sys.exit(4)
+    if any(not isinstance(k,str) or not isinstance(v,str) for k,v in value.items()): sys.exit(5)' "$CONFIG" 2>/dev/null; then
+  echo "kit-update-check: config at $CONFIG has invalid field types and cannot be trusted for classification." >&2
+  exit 5
 fi
 if [ "$CFG_AUTO" = "true" ]; then AUTO_PHRASE="auto-update is on"; else AUTO_PHRASE="auto-update is off"; fi
 
@@ -500,7 +546,24 @@ if ! git clone --quiet "$CLONE_URL" "$CLONE" 2>"$SCRATCH/clone.err"; then
   sed 's/^/  /' "$SCRATCH/clone.err" >&2
   exit 3
 fi
-HEAD_SHA=$(git -C "$CLONE" rev-parse HEAD) || exit 3
+if ! CLONE_HEAD_SHA=$(git -C "$CLONE" rev-parse HEAD 2>/dev/null); then
+  echo "kit-update-check: the clone completed, but its HEAD commit cannot be resolved. The cloned kit data may be corrupt." >&2
+  exit 5
+fi
+if [ -n "$CFG_UPDATE_REF" ]; then
+  if HEAD_SHA=$(git -C "$CLONE" rev-parse --verify --quiet "$CFG_UPDATE_REF^{commit}"); then
+    :
+  elif HEAD_SHA=$(git -C "$CLONE" rev-parse --verify --quiet "origin/$CFG_UPDATE_REF^{commit}"); then
+    :
+  else
+    echo "kit-update-check: update_ref '$CFG_UPDATE_REF' cannot be resolved to a commit in the update source." >&2
+    exit 5
+  fi
+  UPDATE_REF_LABEL="$CFG_UPDATE_REF"
+else
+  HEAD_SHA="$CLONE_HEAD_SHA"
+  UPDATE_REF_LABEL="remote HEAD"
+fi
 
 gshow() { git -C "$CLONE" show "$1:$2" 2>/dev/null; }
 gexists() { git -C "$CLONE" cat-file -e "$1:$2" 2>/dev/null; }
@@ -540,21 +603,21 @@ for e in d.get("files",[]):
 HEAD_MANIFEST="$SCRATCH/manifest-head.json"
 if ! gshow "$HEAD_SHA" "$MANIFEST_NAME" > "$HEAD_MANIFEST" || [ ! -s "$HEAD_MANIFEST" ]; then
   echo "kit-update-check: no $MANIFEST_NAME at HEAD ($HEAD_SHA) -- invalid kit repo." >&2
-  exit 3
+  exit 5
 fi
 HEAD_SCHEMA=$(manifest_schema_of "$HEAD_MANIFEST")
 if [ -z "$HEAD_SCHEMA" ] || [ "$HEAD_SCHEMA" = "-1" ]; then
   echo "kit-update-check: manifest at HEAD is unreadable or malformed." >&2
-  exit 3
+  exit 5
 fi
 if [ "$HEAD_SCHEMA" -gt "$MAX_SCHEMA" ]; then
   echo "kit-update-check: manifest_schema $HEAD_SCHEMA is newer than this script understands (max $MAX_SCHEMA). Update the updater first: the kit ships a newer kit-update-check.sh; install that (per-change consent) and re-run." >&2
-  exit 3
+  exit 5
 fi
 HEAD_TSV="$SCRATCH/head.tsv"
 if ! manifest_tsv "$HEAD_MANIFEST" > "$HEAD_TSV"; then
   echo "kit-update-check: manifest at HEAD failed validation (malformed entry)." >&2
-  exit 3
+  exit 5
 fi
 
 # A missing/empty user_name would render every personalize:true entry with the
@@ -562,7 +625,7 @@ fi
 if [ -z "$USER_NAME" ] && \
    awk -F'\t' '$3=="copied" && $4=="true" && $5!="retired" {found=1; exit} END{exit !found}' "$HEAD_TSV"; then
   echo "kit-update-check: config at $CONFIG is missing or has an empty 'user_name', but the manifest has personalize:true entries -- refusing to render with an empty name (every personalized file would misclassify)." >&2
-  exit 3
+  exit 5
 fi
 
 # Anchor: installed_commit must resolve in the cloned history.
@@ -588,15 +651,15 @@ if [ "$REBASELINE" = "0" ]; then
   INST_SCHEMA=$(manifest_schema_of "$INST_MANIFEST")
   if [ -z "$INST_SCHEMA" ] || [ "$INST_SCHEMA" = "-1" ]; then
     echo "kit-update-check: manifest at installed_commit is unreadable or malformed." >&2
-    exit 3
+    exit 5
   fi
   if [ "$INST_SCHEMA" -gt "$MAX_SCHEMA" ]; then
     echo "kit-update-check: manifest_schema $INST_SCHEMA at installed_commit is newer than this script understands (max $MAX_SCHEMA). Update the updater first." >&2
-    exit 3
+    exit 5
   fi
   if ! manifest_tsv "$INST_MANIFEST" > "$INST_TSV"; then
     echo "kit-update-check: manifest at installed_commit failed validation (malformed entry)." >&2
-    exit 3
+    exit 5
   fi
 else
   : > "$INST_TSV"
@@ -633,9 +696,9 @@ validate_manifest() { # $1 tsv, $2 commit, $3 label
   return 0
 }
 
-validate_manifest "$HEAD_TSV" "$HEAD_SHA" "HEAD" || exit 3
+validate_manifest "$HEAD_TSV" "$HEAD_SHA" "HEAD" || exit 5
 if [ "$REBASELINE" = "0" ]; then
-  validate_manifest "$INST_TSV" "$INSTALLED_SHA" "installed_commit" || exit 3
+  validate_manifest "$INST_TSV" "$INSTALLED_SHA" "installed_commit" || exit 5
 fi
 
 # Declined bookkeeping: install_to <TAB> declined-at SHA
@@ -644,6 +707,28 @@ python3 -c 'import json,sys
 d=json.load(open(sys.argv[1]))
 for k,v in (d.get("declined") or {}).items():
     if isinstance(v,str): print(k+"\t"+v)' "$CONFIG" > "$DECLINED_TSV" 2>/dev/null || : > "$DECLINED_TSV"
+
+# Pending approval bookkeeping: install_to <TAB> commit whose render is live
+PENDING_TSV="$SCRATCH/pending.tsv"
+PENDING_NEXT_TSV="$SCRATCH/pending-next.tsv"
+PENDING_CANDIDATES_TSV="$SCRATCH/pending-candidates.tsv"
+python3 -c 'import json,sys
+d=json.load(open(sys.argv[1]))
+for k,v in (d.get("pending_approval") or {}).items():
+    if isinstance(v,str): print(k+"\t"+v)' "$CONFIG" > "$PENDING_TSV" 2>/dev/null || : > "$PENDING_TSV"
+cp "$PENDING_TSV" "$PENDING_NEXT_TSV"
+: > "$PENDING_CANDIDATES_TSV"
+
+pending_value() { awk -F'\t' -v k="$1" '$1==k{print $2; exit}' "$2"; }
+pending_set() { # $1 install_to  $2 commit
+  awk -F'\t' -v k="$1" '$1!=k' "$PENDING_NEXT_TSV" > "$PENDING_NEXT_TSV.tmp" &&
+    mv "$PENDING_NEXT_TSV.tmp" "$PENDING_NEXT_TSV" &&
+    printf '%s\t%s\n' "$1" "$2" >> "$PENDING_NEXT_TSV"
+}
+pending_clear() { # $1 install_to
+  awk -F'\t' -v k="$1" '$1!=k' "$PENDING_NEXT_TSV" > "$PENDING_NEXT_TSV.tmp" &&
+    mv "$PENDING_NEXT_TSV.tmp" "$PENDING_NEXT_TSV"
+}
 
 # ------------------------------------------------------------------------- render
 # Literal [USER_NAME] -> user_name replacement. Literal means literal: the name
@@ -683,15 +768,17 @@ NOTES="$SCRATCH/notes.md"
 : > "$TABLE"; : > "$MACH"; : > "$NOTES"
 ANY_UPDATE=0
 ANY_ESCALATION=0
+ANY_ATTENTION=0
 
 emit() { # $1 state  $2 install_to  $3 would  $4 sha_ri  $5 sha_rh  $6 sha_live
   printf '| `%s` | %s | %s |\n' "$2" "$1" "$3" >> "$TABLE"
   printf '%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$4" "$5" "$6" >> "$MACH"
   LAST_STATE="$1"
   case "$1" in
-    kit-ahead|new|missing) ANY_UPDATE=1 ;;
-    live-ahead|diverged|conflict|removed-upstream|retired-present|generated-failed) ANY_ESCALATION=1 ;;
+    kit-ahead|new|missing|pending-approval) ANY_UPDATE=1 ;;
+    live-ahead|diverged|conflict|removed-upstream|retired-present|generated-failed) ANY_ESCALATION=1; ANY_ATTENTION=1 ;;
   esac
+  [ "$1" = "pending-approval" ] && ANY_ATTENTION=1
 }
 
 note() { printf -- '- %s\n' "$1" >> "$NOTES"; }
@@ -767,7 +854,7 @@ while IFS='	' read -r it src typ pers ret rf checks own modep cons <&9; do
   RH="$SCRATCH/rh.$ENTRY_N"
   if ! render_at "$HEAD_SHA" "$src" "$pers" "$RH"; then
     echo "kit-update-check: internal: source '$src' vanished from HEAD after validation." >&2
-    exit 3
+    exit 5
   fi
   rh_sha=$(sha_of "$RH")
 
@@ -792,6 +879,41 @@ while IFS='	' read -r it src typ pers ret rf checks own modep cons <&9; do
   fi
 
   lsha="-"; [ -f "$live" ] && lsha=$(sha_of "$live")
+
+  # A decline for the selected upstream render always overrides approval state.
+  declined_exact=0
+  dsha=$(awk -F'\t' -v k="$it" '$1==k{print $2; exit}' "$DECLINED_TSV")
+  if [ -n "$dsha" ] && git -C "$CLONE" rev-parse --verify --quiet "$dsha^{commit}" >/dev/null; then
+    RD="$SCRATCH/rd.$$.$RANDOM"
+    if render_at "$dsha" "$src" "$pers" "$RD" && cmp -s "$RD" "$RH"; then
+      declined_exact=1
+    fi
+    rm -f "$RD" "$RD.raw"
+  fi
+  if [ "$declined_exact" = "1" ]; then
+    [ "$APPLY" = "1" ] && pending_clear "$it"
+    if [ ! -f "$live" ] || ! cmp -s "$live" "$RH"; then
+      emit "declined-pending" "$it" "nothing (you chose Keep for this change; you will be asked again only if the kit changes it again)" "-" "$rh_sha" "$lsha"
+      rm -f "$RH.raw"
+      plan_row "$LAST_STATE" "$it" "$own" "$modep" "$cons" "$renpend" "$rf" "$RH"
+      continue
+    fi
+  fi
+
+  # A recorded approval wait is stable across later upstream commits when the
+  # live bytes still match the render saved in the config.
+  psha=$(pending_value "$it" "$PENDING_TSV")
+  if [ "$cons" = "per-change" ] && [ -n "$psha" ] && [ -f "$live" ] && ! cmp -s "$live" "$RH"; then
+    RP="$SCRATCH/rp.$$.$RANDOM"
+    if git -C "$CLONE" rev-parse --verify --quiet "$psha^{commit}" >/dev/null &&
+       render_at "$psha" "$src" "$pers" "$RP" && cmp -s "$live" "$RP"; then
+      emit "pending-approval" "$it" "awaiting your individual approval; nothing was changed" "-" "$rh_sha" "$lsha"
+      rm -f "$RP" "$RP.raw" "$RH.raw"
+      plan_row "$LAST_STATE" "$it" "$own" "$modep" "$cons" "$renpend" "$rf" "$RH"
+      continue
+    fi
+    rm -f "$RP" "$RP.raw"
+  fi
 
   # ---- re-baseline posture: two-way against render(HEAD) only
   if [ "$REBASELINE" = "1" ]; then
@@ -833,17 +955,13 @@ while IFS='	' read -r it src typ pers ret rf checks own modep cons <&9; do
             emit "in-sync" "$it" "nothing" "$ri_sha" "$rh_sha" "$lsha"
           fi
         else
-          # kit-ahead -- unless this exact upstream change was already declined
+          # kit-ahead, with per-change approval recorded during apply
           state="kit-ahead"
           would="would be updated ($AUTO_PHRASE; a backup is always kept)$live_note"
-          dsha=$(awk -F'\t' -v k="$it" '$1==k{print $2; exit}' "$DECLINED_TSV")
-          if [ -n "$dsha" ] && git -C "$CLONE" rev-parse --verify --quiet "$dsha^{commit}" >/dev/null; then
-            RD="$SCRATCH/rd.$$.$RANDOM"
-            if render_at "$dsha" "$src" "$pers" "$RD" && cmp -s "$RD" "$RH"; then
-              state="declined-pending"
-              would="nothing (you chose Keep for this change; you will be asked again only if the kit changes it again)"
-            fi
-            rm -f "$RD" "$RD.raw"
+          if [ "$APPLY" = "1" ] && [ "$CFG_AUTO" = "true" ] && [ "$cons" = "per-change" ]; then
+            state="pending-approval"
+            would="awaiting your individual approval; nothing was changed"
+            printf '%s\t%s\n' "$it" "$INSTALLED_SHA" >> "$PENDING_CANDIDATES_TSV"
           fi
           emit "$state" "$it" "$would" "$ri_sha" "$rh_sha" "$lsha"
         fi
@@ -893,14 +1011,43 @@ if [ "$REBASELINE" = "0" ]; then
   done 9< "$INST_TSV"
 fi
 
+# Validate every requested approval before the apply phase can write anything.
+if [ "$APPROVE_N" -gt 0 ]; then
+  for approval_path in "${APPROVE_PATHS[@]}"; do
+    approval_consent=$(awk -F'\t' -v k="$approval_path" '$1==k{print $10; exit}' "$HEAD_TSV")
+    if [ -z "$approval_consent" ]; then
+      echo "kit-update-check: cannot approve '$approval_path': no manifest entry has that install path." >&2
+      exit 3
+    fi
+    if [ "$approval_consent" != "per-change" ]; then
+      echo "kit-update-check: cannot approve '$approval_path': this file does not require individual approval." >&2
+      exit 3
+    fi
+    approval_owner=$(awk -F'\t' -v k="$approval_path" '$1==k{print $8; exit}' "$HEAD_TSV")
+    if [ "$approval_owner" != "kit" ]; then
+      echo "kit-update-check: cannot approve '$approval_path': this file is not managed by the kit." >&2
+      exit 3
+    fi
+    approval_state=$(awk -F'\t' -v k="$approval_path" '$2==k{print $1; exit}' "$PLAN")
+    case "$approval_state" in
+      pending-approval|kit-ahead|new|missing) : ;;
+      *)
+        echo "kit-update-check: cannot approve '$approval_path': this file is not waiting for an applicable per-change update." >&2
+        exit 3
+        ;;
+    esac
+  done
+fi
+
 # ----------------------------------------------------------------- apply phase
 # Only entered with --apply. Everything below the classification is decision +
-# write; the classification above is byte-identical to a dry run.
+# write. Classification itself remains read only.
 APPLIED_TABLE="$SCRATCH/applied.md"
 APPLIED_MACH="$SCRATCH/applied.tsv"
 : > "$APPLIED_TABLE"; : > "$APPLIED_MACH"
 APPLIED_N=0
 UNAPPLIED_N=0
+OPERATIONAL_ERROR=0
 ANCHOR_NOTE=""
 ANCHOR_ADVANCED=0
 
@@ -921,13 +1068,13 @@ retire_live() { # $1 install_to -> moves live file to kit-retired/<date>/, echoe
 if [ "$APPLY" = "1" ]; then
   RETIRE_DATE=$(date -u +%Y-%m-%d)
 
-  if [ "$CFG_AUTO" != "true" ]; then
+  if [ "$CFG_AUTO" != "true" ] && [ "$APPROVE_N" -eq 0 ]; then
     # ---- auto-update is OFF: nothing is written, not even the anchor. The
     # report lists each pending change with the Replace/Keep vocabulary the
     # wizard taught; interactive prompting is repair's job, not this script's.
     while IFS='	' read -r pstate pit pown pmode pcons prenpend prf prh <&7; do
       case "$pstate" in
-        kit-ahead|new|missing)
+        kit-ahead|new|missing|pending-approval)
           if [ "$pown" != "kit" ]; then
             applied "skipped-user-owned" "$pit" "user-owned -- never written" "-"
             UNAPPLIED_N=$((UNAPPLIED_N+1))
@@ -948,15 +1095,33 @@ if [ "$APPLY" = "1" ]; then
   else
     # ---- auto-update is ON: write per entry, with backup-first discipline.
     while IFS='	' read -r pstate pit pown pmode pcons prenpend prf prh <&7; do
+      if [ "$pcons" = "per-change" ]; then
+        case "$pstate" in
+          in-sync|already-current) pending_clear "$pit" ;;
+        esac
+      fi
       case "$pstate" in
-        kit-ahead|new|missing)
+        kit-ahead|new|missing|pending-approval)
           if [ "$pown" != "kit" ]; then
             applied "skipped-user-owned" "$pit" "user-owned -- never written" "-"
             UNAPPLIED_N=$((UNAPPLIED_N+1))
             continue
           fi
+          approved_this=0
           if [ "$pcons" = "per-change" ]; then
-            applied "needs-approval" "$pit" "per-change consent -- this file needs your individual approval; nothing was changed" "-"
+            if is_approved "$pit"; then
+              approved_this=1
+            else
+              psha=$(pending_value "$pit" "$PENDING_CANDIDATES_TSV")
+              [ -n "$psha" ] || psha=$(pending_value "$pit" "$PENDING_TSV")
+              [ -n "$psha" ] && pending_set "$pit" "$psha"
+              applied "needs-approval" "$pit" "per-change consent -- this file needs your individual approval; nothing was changed" "-"
+              UNAPPLIED_N=$((UNAPPLIED_N+1))
+              continue
+            fi
+          fi
+          if [ "$CFG_AUTO" != "true" ] && [ "$approved_this" != "1" ]; then
+            applied "would-apply" "$pit" "auto-update is off, so nothing was changed. Your choice, file by file: Replace or Keep" "-"
             UNAPPLIED_N=$((UNAPPLIED_N+1))
             continue
           fi
@@ -987,13 +1152,25 @@ if [ "$APPLY" = "1" ]; then
             rec="updated"
             bpath="$BKDIR/$pit"
           else
-            rec="installed"   # no existing file: backup skipped, by design
+            if ! ensure_backup_dir "update"; then
+              applied "failed" "$pit" "could not prepare the backup record; nothing was changed" "-"
+              UNAPPLIED_N=$((UNAPPLIED_N+1))
+              continue
+            fi
+            rec="installed"   # no existing file to back up
             bpath="-"
           fi
           if place_file "$prh" "$dest" "$pmode"; then
             bk_record "$rec" "$pit"
             APPLIED_N=$((APPLIED_N+1))
-            if [ "$rec" = "updated" ]; then
+            if [ "$approved_this" = "1" ]; then
+              pending_clear "$pit"
+              if [ "$rec" = "updated" ]; then
+                applied "individually-approved" "$pit" "individually approved and updated; the previous version was backed up$ren_note" "$bpath"
+              else
+                applied "individually-approved" "$pit" "individually approved and installed; there was no previous file to back up$ren_note" "$bpath"
+              fi
+            elif [ "$rec" = "updated" ]; then
               applied "updated" "$pit" "updated to the kit's latest version; the previous version was backed up$ren_note" "$bpath"
             else
               applied "installed" "$pit" "installed the kit's latest version; there was no previous file to back up$ren_note" "$bpath"
@@ -1004,26 +1181,34 @@ if [ "$APPLY" = "1" ]; then
           fi
           ;;
         retired-present)
-          rdst=$(retire_live "$pit")
-          if [ -n "$rdst" ]; then
-            ensure_backup_dir "update" && bk_record "# retired-to $rdst" "$pit"
-            APPLIED_N=$((APPLIED_N+1))
-            applied "retired" "$pit" "moved to $rdst -- a move, never a delete. Undo does not cover this; the file stays there until you decide" "-"
+          if [ "$CFG_AUTO" != "true" ]; then
+            applied "would-retire" "$pit" "automatic updates are off, so this file was not moved" "-"
           else
-            applied "failed" "$pit" "could not move to kit-retired/; left in place" "-"
+            rdst=$(retire_live "$pit")
+            if [ -n "$rdst" ]; then
+              ensure_backup_dir "update" && bk_record "# retired-to $rdst" "$pit"
+              APPLIED_N=$((APPLIED_N+1))
+              applied "retired" "$pit" "moved to $rdst -- a move, never a delete. Undo does not cover this; the file stays there until you decide" "-"
+            else
+              applied "failed" "$pit" "could not move to kit-retired/; left in place" "-"
+            fi
           fi
           ;;
         removed-upstream)
           # Design table: removed-upstream live files also move to kit-retired
           # (the loud exit-2 escalation still stands either way).
           if [ -e "$HOME_DIR/$pit" ]; then
-            rdst=$(retire_live "$pit")
-            if [ -n "$rdst" ]; then
-              ensure_backup_dir "update" && bk_record "# retired-to $rdst" "$pit"
-              APPLIED_N=$((APPLIED_N+1))
-              applied "retired" "$pit" "removed upstream without a tombstone -- moved to $rdst and flagged for review (a move, never a delete)" "-"
+            if [ "$CFG_AUTO" != "true" ]; then
+              applied "would-retire" "$pit" "automatic updates are off, so this file was not moved" "-"
             else
-              applied "failed" "$pit" "could not move to kit-retired/; left in place" "-"
+              rdst=$(retire_live "$pit")
+              if [ -n "$rdst" ]; then
+                ensure_backup_dir "update" && bk_record "# retired-to $rdst" "$pit"
+                APPLIED_N=$((APPLIED_N+1))
+                applied "retired" "$pit" "removed upstream without a tombstone -- moved to $rdst and flagged for review (a move, never a delete)" "-"
+              else
+                applied "failed" "$pit" "could not move to kit-retired/; left in place" "-"
+              fi
             fi
           fi
           ;;
@@ -1044,7 +1229,13 @@ if [ "$APPLY" = "1" ]; then
           [ -e "$HOME_DIR/$pit" ] && NOT_CLEAN=$((NOT_CLEAN+1))
           ;;
         declined-pending)
-          : ;;   # a recorded decline counts as clean, by design
+          : ;;   # a recorded decline counts as clean
+        pending-approval)
+          if ! cmp -s "$HOME_DIR/$pit" "$prh" &&
+             [ -z "$(pending_value "$pit" "$PENDING_NEXT_TSV")" ]; then
+            NOT_CLEAN=$((NOT_CLEAN+1))
+          fi
+          ;;
         *)
           if [ "$prh" = "-" ] || ! cmp -s "$HOME_DIR/$pit" "$prh"; then
             NOT_CLEAN=$((NOT_CLEAN+1))
@@ -1053,44 +1244,77 @@ if [ "$APPLY" = "1" ]; then
       esac
     done 7< "$PLAN"
 
-    if [ "$NOT_CLEAN" -eq 0 ]; then
-      if [ -n "$INSTALLED_SHA" ] && [ "$HEAD_SHA" = "$INSTALLED_SHA" ]; then
-        ANCHOR_NOTE="installed_commit already at HEAD ($HEAD_SHA); nothing to advance."
-      else
-        case "$CONFIG" in
-          "$HOME_DIR"/*) relcfg="${CONFIG#"$HOME_DIR"/}" ;;
-          *) relcfg="" ;;
-        esac
-        cfg_ok=1
-        if ensure_backup_dir "update"; then
-          if [ -n "$relcfg" ]; then
-            backup_copy "$relcfg" "$CONFIG" && bk_record "updated" "$relcfg" || cfg_ok=0
-          else
-            note "config lives outside --home ($CONFIG); its previous version was NOT backed up and --undo will not restore it."
-          fi
+    PENDING_CHANGED=0
+    cmp -s "$PENDING_TSV" "$PENDING_NEXT_TSV" || PENDING_CHANGED=1
+    ANCHOR_NEEDS_ADVANCE=0
+    if [ "$NOT_CLEAN" -eq 0 ] && { [ -z "$INSTALLED_SHA" ] || [ "$HEAD_SHA" != "$INSTALLED_SHA" ]; }; then
+      ANCHOR_NEEDS_ADVANCE=1
+    fi
+    CONFIG_WRITE_NEEDED=0
+    [ "$PENDING_CHANGED" = "1" ] && CONFIG_WRITE_NEEDED=1
+    [ "$ANCHOR_NEEDS_ADVANCE" = "1" ] && CONFIG_WRITE_NEEDED=1
+    CONFIG_WRITE_OK=1
+
+    if [ "$CONFIG_WRITE_NEEDED" = "1" ]; then
+      case "$CONFIG" in
+        "$HOME_DIR"/*) relcfg="${CONFIG#"$HOME_DIR"/}" ;;
+        *) relcfg="" ;;
+      esac
+      if ensure_backup_dir "update"; then
+        if [ -n "$relcfg" ]; then
+          backup_copy "$relcfg" "$CONFIG" && bk_record "updated" "$relcfg" || CONFIG_WRITE_OK=0
         else
-          cfg_ok=0
+          note "config lives outside --home ($CONFIG); its previous version was NOT backed up and --undo will not restore it."
         fi
-        if [ "$cfg_ok" = "1" ]; then
-          SIDE_N=$((SIDE_N+1))
-          cfgside="$(dirname "$CONFIG")/.kuc-sidecar.$$.$SIDE_N"
-          if python3 -c 'import json,sys
+      else
+        CONFIG_WRITE_OK=0
+      fi
+      if [ "$CONFIG_WRITE_OK" = "1" ]; then
+        SIDE_N=$((SIDE_N+1))
+        cfgside="$(dirname "$CONFIG")/.kuc-sidecar.$$.$SIDE_N"
+        if [ -z "${KUC_TEST_FAIL_CONFIG_WRITE:-}" ] && python3 -c 'import json,sys
 d=json.load(open(sys.argv[1]))
-d["installed_commit"]=sys.argv[2]
-d["installed_at"]=sys.argv[3]
-open(sys.argv[4],"w").write(json.dumps(d,indent=2)+"\n")' "$CONFIG" "$HEAD_SHA" "$NOW_UTC" "$cfgside" \
-             && mv "$cfgside" "$CONFIG"; then
+if sys.argv[6]=="1":
+    d["installed_commit"]=sys.argv[2]
+    d["installed_at"]=sys.argv[3]
+pending={}
+for line in open(sys.argv[5]):
+    line=line.rstrip("\n")
+    if line:
+        k,v=line.split("\t",1)
+        pending[k]=v
+d["pending_approval"]=pending
+open(sys.argv[4],"w").write(json.dumps(d,indent=2)+"\n")' \
+          "$CONFIG" "$HEAD_SHA" "$NOW_UTC" "$cfgside" "$PENDING_NEXT_TSV" "$ANCHOR_NEEDS_ADVANCE" \
+          && mv "$cfgside" "$CONFIG"; then
+          if [ -n "$relcfg" ]; then abpath="$BKDIR/$relcfg"; else abpath="-"; fi
+          if [ "$ANCHOR_NEEDS_ADVANCE" = "1" ]; then
             ANCHOR_ADVANCED=1
-            ANCHOR_NOTE="installed_commit advanced: ${INSTALLED_SHA:-<none>} -> $HEAD_SHA (written once, last, after verifying every entry against render(HEAD))."
-            if [ -n "$relcfg" ]; then abpath="$BKDIR/$relcfg"; else abpath="-"; fi
             applied "anchor-advanced" "${relcfg:-$CONFIG}" "installed_commit -> $HEAD_SHA, installed_at -> $NOW_UTC" "$abpath"
           else
-            rm -f "$cfgside"
-            ANCHOR_NOTE="installed_commit NOT advanced: the config write failed. The anchor holds; the next run re-classifies and finishes the job."
+            applied "approval-record-updated" "${relcfg:-$CONFIG}" "pending approval records updated" "$abpath"
           fi
         else
-          ANCHOR_NOTE="installed_commit NOT advanced: could not back up the config first. The anchor holds; the next run re-classifies and finishes the job."
+          rm -f "$cfgside"
+          CONFIG_WRITE_OK=0
         fi
+      fi
+      if [ "$CONFIG_WRITE_OK" != "1" ] && [ "$APPROVE_N" -gt 0 ]; then
+        OPERATIONAL_ERROR=1
+      fi
+    fi
+
+    if [ "$NOT_CLEAN" -eq 0 ]; then
+      if [ "$ANCHOR_NEEDS_ADVANCE" = "1" ] && [ "$CONFIG_WRITE_OK" = "1" ]; then
+        ANCHOR_NOTE="installed_commit advanced: ${INSTALLED_SHA:-<none>} -> $HEAD_SHA (written once, last, after verifying every entry against render(HEAD))."
+      elif [ "$ANCHOR_NEEDS_ADVANCE" = "1" ]; then
+        ANCHOR_NOTE="installed_commit NOT advanced: the config write failed. The anchor holds; the next run re-classifies and finishes the job."
+      elif [ "$PENDING_CHANGED" = "1" ] && [ "$CONFIG_WRITE_OK" = "1" ]; then
+        ANCHOR_NOTE="installed_commit already at HEAD ($HEAD_SHA); pending approval records updated."
+      elif [ "$PENDING_CHANGED" = "1" ]; then
+        ANCHOR_NOTE="installed_commit already at HEAD ($HEAD_SHA); the config write failed. The next run will reconcile the approved file and its approval record."
+      else
+        ANCHOR_NOTE="installed_commit already at HEAD ($HEAD_SHA); nothing to advance."
       fi
     else
       if [ "$NOT_CLEAN" -eq 1 ]; then
@@ -1099,6 +1323,9 @@ open(sys.argv[4],"w").write(json.dumps(d,indent=2)+"\n")' "$CONFIG" "$HEAD_SHA" 
         NC_PHRASE="$NOT_CLEAN files still differ"
       fi
       ANCHOR_NOTE="installed_commit NOT advanced: $NC_PHRASE from the kit's latest version. The anchor holds; the next run re-classifies whatever this run completed as already-current and finishes the job (self-healing)."
+      if [ "$PENDING_CHANGED" = "1" ] && [ "$CONFIG_WRITE_OK" != "1" ]; then
+        ANCHOR_NOTE="$ANCHOR_NOTE The pending approval record could not be saved."
+      fi
     fi
   fi
 fi
@@ -1131,7 +1358,9 @@ if [ "$APPLY" = "1" ]; then
 else
   [ "$ANY_UPDATE" = "1" ] && RESULT=1
 fi
+# Precedence: integrity failures exit 5 earlier; here escalations set 2, then operational errors override them with 3.
 [ "$ANY_ESCALATION" = "1" ] && RESULT=2
+[ "$OPERATIONAL_ERROR" = "1" ] && RESULT=3
 
 {
   if [ "$APPLY" = "1" ]; then
@@ -1142,6 +1371,12 @@ fi
       echo "automatically, and you can say \"turn off auto-updates\" anytime."
       # The undo promise is printed ONLY when this run actually backed
       # something up -- a run that wrote nothing has nothing to undo.
+      if [ -n "$BKDIR" ] && [ -s "$BKMAN" ]; then
+        echo "Every changed file was backed up first; say \"undo the last kit update\""
+        echo "to put everything back exactly as it was."
+      fi
+    elif [ "$APPROVE_N" -gt 0 ]; then
+      echo "Automatic updates are OFF. This run only applied files you individually approved."
       if [ -n "$BKDIR" ] && [ -s "$BKMAN" ]; then
         echo "Every changed file was backed up first; say \"undo the last kit update\""
         echo "to put everything back exactly as it was."
@@ -1161,6 +1396,8 @@ fi
   echo "- generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "- home: $HOME_DIR"
   echo "- upstream: $UPSTREAM"
+  echo "- update_ref: $UPDATE_REF_LABEL"
+  echo "- resolved_commit: $HEAD_SHA"
   if [ "$ANCHOR_ADVANCED" = "1" ]; then
     old_short="<none>"
     [ -n "$CFG_INSTALLED" ] && old_short=$(printf '%.7s' "$CFG_INSTALLED")
@@ -1170,9 +1407,9 @@ fi
   fi
   echo "- head_commit: $HEAD_SHA"
   if [ "$APPLY" = "1" ]; then
-    echo "- exit code: $RESULT (0 nothing left to do, 1 updates remained unapplied, 2 escalations present)"
+    echo "- exit code: $RESULT (0 nothing left to do, 1 updates remained unapplied, 2 escalations present, 3 could not check this time, 4 setup required, 5 kit data needs attention)"
   else
-    echo "- exit code: $RESULT (0 all in-sync, 1 updates available, 2 escalations present)"
+    echo "- exit code: $RESULT (0 all in-sync, 1 updates available, 2 escalations present, 3 could not check this time, 4 setup required, 5 kit data needs attention)"
   fi
   if [ "$REBASELINE" = "1" ]; then
     echo
@@ -1184,7 +1421,7 @@ fi
   echo "| install_to | state | action a real run WOULD take |"
   echo "|---|---|---|"
   cat "$TABLE"
-  if [ "$ANY_ESCALATION" = "1" ]; then
+  if [ "$ANY_ATTENTION" = "1" ]; then
     echo
     echo "## Needs your attention"
     echo
@@ -1206,6 +1443,8 @@ fi
           echo "- \`$mit\` -- The kit has retired this file. Your copy is never deleted -- at most it is moved to the kit-retired folder, where it stays until you decide." ;;
         generated-failed)
           echo "- \`$mit\` -- This file is yours and the kit never writes it, but it seems to be missing a section the kit expects. Nothing was changed -- ask your assistant to take a look when convenient." ;;
+        pending-approval)
+          echo "- \`$mit\`: This file is awaiting your individual approval. Nothing was changed." ;;
       esac
     done < "$MACH"
   fi
