@@ -2,6 +2,17 @@
 
 Plain-language notes on what changed in the kit, newest first. When the kit updates on your machine, the summary you see is assembled from these lines.
 
+## July 16, 2026 update
+
+- All kit templates and skills now use plain punctuation (commas, colons, periods) instead of double dashes. Your project files stamped from older templates will be gently restamped to match at their next checkup; that is this change propagating, not something wrong.
+- Compression notes get a new heading format inside the note: `# Session NN (YYYY-MM-DD): Title`. Existing notes keep their old headings; only new notes use it.
+
+## July 15, 2026 update
+
+- The session-number check at wrap-up now asks "does the session number end in 0 or 5" instead of "is it divisible by 5", so the every-5th-session checkup can't be missed through a mental-math slip.
+- Every project CLAUDE.md must carry its session-end wrap line; a missing line is now a checkup finding, so a project can't silently drop off the checkup schedule.
+- The checkup's helper agents now skip optional consultation tools that could stall a run, keeping checkups moving.
+
 ## July 11, 2026 update
 
 - Fresh installs now connect to the kit's update channel during setup, so a brand-new install can keep itself current instead of being frozen at the version it was installed with.
